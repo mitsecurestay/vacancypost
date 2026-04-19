@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VacancyPost</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0e0e0e; --surface:#161616; --surface2:#1e1e1e;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
+  --text:#f0ede8; --muted:#888580; --hint:#555250;
+  --accent:#c8b97a; --accent2:#8fbc8f; --danger:#d4756a;
+  --mono:'DM Mono',monospace; --serif:'Fraunces',serif;
+  --tap:48px;
+  --sidebar-w:280px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;line-height:1.6;}
+
+/* ── TOP NAV (mobile only) ── */
+.topbar{display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:52px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-logo{font-family:var(--serif);font-size:15px;font-weight:600;}
+.topbar-logo span{color:var(--accent);font-style:italic;}
+.menu-btn{background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:12px;padding:6px 12px;cursor:pointer;}
+
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh;}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;transition:transform 0.2s;}
+.sidebar-header{padding:22px 20px 18px;border-bottom:1px solid var(--border);}
+.logo{font-family:var(--serif);font-size:17px;font-weight:600;letter-spacing:-0.02em;}
+.logo span{color:var(--accent);font-style:italic;}
+.logo-sub{font-size:10px;color:var(--hint);text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;}
+.sidebar-section{padding:16px 20px 8px;}
+.sidebar-label{font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:10px;}
+.unit-btn{display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:3px;background:transparent;border:1px solid transparent;border-radius:6px;cursor:pointer;font-family:var(--mono);color:var(--muted);transition:all 0.12s;min-height:var(--tap);}
+.unit-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border);}
+.unit-btn.active{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+.unit-name{font-size:12px;font-weight:500;display:block;}
+.unit-meta{font-size:11px;color:var(--hint);display:block;margin-top:2px;}
+.unit-btn.active .unit-meta{color:var(--muted);}
+.avail-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle;position:relative;top:-1px;}
+.dot-now{background:var(--accent2);} .dot-soon{background:var(--accent);} .dot-later{background:var(--hint);}
+.sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
+.add-btn{display:flex;align-items:center;justify-content:center;width:100%;text-align:center;padding:10px;background:transparent;border:1px dashed var(--border2);border-radius:6px;font-family:var(--mono);font-size:11px;color:var(--hint);cursor:pointer;transition:all 0.12s;min-height:40px;}
+.add-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ── MAIN ── */
+.main{padding:36px 48px;width:100%;}
+.placeholder{display:flex;align-items:center;justify-content:center;min-height:60vh;color:var(--hint);font-size:13px;flex-direction:column;gap:8px;text-align:center;}
+
+/* ── UNIT HEADER ── */
+.unit-header{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border);}
+.unit-title{font-family:var(--serif);font-size:26px;font-weight:300;letter-spacing:-0.02em;line-height:1.2;}
+.unit-title em{font-style:italic;color:var(--accent);}
+.unit-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.unit-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;margin-top:4px;}
+.unit-badges{display:flex;flex-wrap:wrap;gap:6px;}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);}
+.badge-avail{border-color:var(--accent2);color:var(--accent2);}
+.badge-soon{border-color:var(--accent);color:var(--accent);}
+.lease-btn{font-family:var(--mono);font-size:11px;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap;}
+.lease-btn:hover{border-color:var(--danger);color:var(--danger);}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border);}
+.tab{font-family:var(--mono);font-size:12px;font-weight:500;padding:10px 20px;background:transparent;border:none;color:var(--hint);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s;letter-spacing:0.03em;text-transform:uppercase;}
+.tab:hover{color:var(--muted);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── BROADCAST CARDS -- 2 col on desktop ── */
+.broadcast-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:8px;}
+.bcast-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.12s;display:flex;flex-direction:column;}
+.bcast-card:hover{border-color:var(--border2);}
+.bcast-header{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;}
+.bcast-name{font-size:12px;font-weight:500;color:var(--text);}
+.bcast-type{font-size:11px;color:var(--hint);margin-top:2px;}
+.bcast-copy-wrap{padding:0 16px 16px;flex:1;display:flex;flex-direction:column;}
+.bcast-text{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-size:13px;line-height:1.75;color:var(--text);white-space:pre-wrap;word-break:break-word;flex:1;}
+.bcast-footer{display:flex;align-items:center;justify-content:flex-end;margin-top:10px;}
+.char-badge{font-size:11px;padding:2px 8px;border-radius:20px;margin-right:8px;}
+.char-ok{border:1px solid rgba(143,188,143,0.4);color:var(--accent2);}
+.char-warn{border:1px solid rgba(212,117,106,0.4);color:var(--danger);}
+.copy-btn{font-family:var(--mono);font-size:12px;font-weight:500;padding:8px 20px;border-radius:20px;cursor:pointer;background:var(--accent);color:#0e0e0e;border:none;transition:opacity 0.12s;}
+.copy-btn:hover{opacity:0.85;}
+.copy-btn:active{opacity:0.7;}
+
+/* ── PLATFORM LISTINGS ── */
+.dest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:20px;}
+.dest-card{padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.12s;min-height:var(--tap);display:flex;flex-direction:column;justify-content:center;}
+.dest-card:hover{border-color:var(--border2);background:var(--surface2);}
+.dest-card.active{border-color:var(--accent);background:var(--surface2);}
+.dest-name{font-size:12px;font-weight:500;color:var(--text);}
+.dest-fmt{font-size:11px;color:var(--hint);margin-top:2px;}
+.dest-card.active .dest-fmt{color:var(--muted);}
+.listing-copy-wrap{margin-top:4px;}
+.listing-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.copy-label{font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--hint);}
+.listing-box{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:20px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-word;min-height:100px;}
+.listing-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.copy-note{font-size:11px;color:var(--hint);}
+
+/* ── PHOTO CHECK ── */
+.photo-check{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-top:20px;font-size:12px;color:var(--hint);line-height:1.8;}
+
+/* ── LEASED BANNER ── */
+.leased-banner{background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:6px;padding:10px 16px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);}
+.restore-btn{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:480px;max-width:100%;max-height:90vh;overflow-y:auto;}
+.modal-title{font-family:var(--serif);font-size:20px;font-weight:300;margin-bottom:20px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--hint);margin-bottom:6px;}
+.field input,.field select,.field textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:9px 12px;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;min-height:40px;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field select option{background:var(--surface2);}
+.field textarea{min-height:60px;resize:vertical;line-height:1.5;}
+.checkbox-row{display:flex;flex-wrap:wrap;gap:10px;}
+.checkbox-row label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;text-transform:none;letter-spacing:0;}
+.checkbox-row input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent);}
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+.btn-primary{flex:1;padding:11px;background:var(--accent);color:#0e0e0e;border:none;border-radius:6px;font-family:var(--mono);font-size:13px;font-weight:500;cursor:pointer;min-height:var(--tap);}
+.btn-secondary{padding:11px 20px;background:transparent;color:var(--muted);border:1px solid var(--border2);border-radius:6px;font-family:var(--mono);font-size:13px;cursor:pointer;min-height:var(--tap);}
+
+/* ── DESKTOP RESPONSIVE ── */
+@media(min-width:1200px){
+  :root{--sidebar-w:300px;}
+  .main{padding:40px 56px;}
+  .broadcast-grid{grid-template-columns:repeat(2,1fr);gap:14px;}
+}
+
+/* ── MOBILE ── */
+@media(max-width:680px){
+  .topbar{display:flex;}
+  .app{grid-template-columns:1fr;}
+  .sidebar{position:fixed;top:52px;left:0;height:calc(100vh - 52px);width:260px;z-index:40;transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{padding:16px;padding-top:20px;}
+  .unit-title{font-size:20px;}
+  .broadcast-grid{grid-template-columns:1fr;}
+  .dest-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));}
+  .tab{font-size:11px;padding:8px 12px;}
+  .unit-top{flex-wrap:wrap;}
+  .unit-actions{width:100%;justify-content:flex-start;margin-top:8px;}
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile top bar -->
+<div class="topbar">
+  <div class="topbar-logo" style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="document.getElementById('welcomeOverlay').classList.add('open')" title="Home"><img src="data:image/jpeg;base64,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" style="width:24px;height:24px;object-fit:contain;filter:invert(0);opacity:0.85;" alt="MIT Secure Stay">Vacancy<span>Post</span></div>
+  <button class="menu-btn" onclick="toggleSidebar()">Vacancies</button>
+</div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;cursor:pointer;" onclick="document.getElementById('welcomeOverlay').classList.add('open')" title="Back to home">
+        <img src="data:image/jpeg;base64,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" style="width:32px;height:32px;object-fit:contain;filter:invert(1);opacity:0.85;" alt="MIT Secure Stay">
+        <div class="logo">Vacancy<span>Post</span></div>
+      </div>
+      <div class="logo-sub">Tenant Acquisition & Communication</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Active Vacancies</div>
+      <div id="unitList"></div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="add-btn" onclick="openModal()">+ Add vacancy</button>
+    </div>
+  </aside>
+
+  <main class="main" id="mainContent">
+    <div class="placeholder">
+      <div style="font-size:28px;opacity:0.2;margin-bottom:8px">&#9636;</div>
+      <div>Select a vacancy to generate copy</div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Unit Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">Add vacancy</div>
+    <div class="field"><label>Unit name</label><input type="text" id="m_name" placeholder="e.g. Riverdale Room D"></div>
+    <div class="field"><label>City / area</label><input type="text" id="m_city" placeholder="e.g. Riverdale, MD"></div>
+    <div class="field"><label>Positioning tier</label>
+      <select id="m_tier">
+        <option value="standard">Standard</option>
+        <option value="hard_trust">Hard -- Trust (safety/location concerns)</option>
+        <option value="hard_local">Hard -- Local (local movers, practical framing)</option>
+      </select>
+    </div>
+    <div class="field"><label>Monthly rent</label><input type="text" id="m_rent" placeholder="e.g. $925"></div>
+    <div class="field"><label>Availability</label><input type="text" id="m_avail" placeholder="e.g. Now, May 1, June 1"></div>
+    <div class="field"><label>Transit / landmark</label><input type="text" id="m_transit" placeholder="e.g. 3 min walk to bus stop"></div>
+    <div class="field"><label>Standout detail (optional)</label><input type="text" id="m_highlight" placeholder="e.g. 1 dedicated parking space"></div>
+    <div class="field"><label>Bathroom</label>
+      <select id="m_bath">
+        <option value="shared2">Shared with 2 housemates</option>
+        <option value="shared">Shared</option>
+        <option value="private">Private</option>
+      </select>
+    </div>
+    <div class="field"><label>Inclusions</label>
+      <div class="checkbox-row">
+        <label><input type="checkbox" id="m_furnished" checked> Furnished</label>
+        <label><input type="checkbox" id="m_utilities" checked> All utilities</label>
+        <label><input type="checkbox" id="m_wifi" checked> Wifi</label>
+        <label><input type="checkbox" id="m_laundry" checked> In-unit laundry</label>
+        <label><input type="checkbox" id="m_parking"> Parking</label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="addUnit()">Add vacancy</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var BROADCASTS = [
+  {id:'groupme_general', name:'General DMV Housing',   type:'GroupMe',        limit:300},
+  {id:'groupme_howard',  name:'Howard GroupMe',        type:'GroupMe',        limit:300},
+  {id:'fb_students',     name:'Student Housing Groups',type:'Facebook Group', limit:500},
+  {id:'fb_general',      name:'General Housing Groups',type:'Facebook Group', limit:500},
+];
+
+var PLATFORMS = [
+  {id:'zillow',         name:'Zillow',               fmt:'Professional', limit:2000},
+  {id:'roomies',        name:'Roomies.com',           fmt:'Professional', limit:800},
+  {id:'furnished',      name:'Furnished Finder',      fmt:'Traveling professional', limit:1500},
+  {id:'craigslist',     name:'Craigslist',            fmt:'Scroll-stopping', limit:null},
+  {id:'facebook_mktpl', name:'Facebook Marketplace',  fmt:'Scroll-stopping', limit:500},
+];
+
+var units = [
+  {id:'dcn_b', photoUrl:'https://drive.google.com/drive/folders/1JzH4PbAllJoBNwCHxmNOLfxl7L0VimN6?usp=drive_link', name:'Jay St NE -- Room B',          tier:'hard_trust',  city:'NE Washington, DC 20019', rent:'$925', avail:'Now',       availDot:'now',   bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:false, transit:'Bus stop 2-3 min walk. Three Metro stations nearby: Benning Road (Blue/Silver, ~0.8mi), Deanwood (Orange, ~1mi), Capitol Heights (Blue/Silver, ~1.2mi). Easy access to downtown DC and Capitol Hill.', highlight:'Street parking, no ticketing or towing.'},
+  {id:'dcn_c', photoUrl:'https://drive.google.com/drive/folders/1JzH4PbAllJoBNwCHxmNOLfxl7L0VimN6?usp=drive_link', name:'Jay St NE -- Room C',          tier:'hard_trust',  city:'NE Washington, DC 20019', rent:'$925', avail:'May 1',     availDot:'soon',  bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:false, transit:'Bus stop 2-3 min walk. Three Metro stations nearby: Benning Road (Blue/Silver, ~0.8mi), Deanwood (Orange, ~1mi), Capitol Heights (Blue/Silver, ~1.2mi). Easy access to downtown DC and Capitol Hill.', highlight:'Street parking, no ticketing or towing.'},
+  {id:'ss_a', photoUrl:'https://drive.google.com/drive/folders/1k7vzEq1Lsmmp3LAmI4CCALU8Rd2MUK0z?usp=drive_link',  name:'Hammersmith -- Room',     tier:'standard',    city:'Silver Spring, MD',        rent:'$925', avail:'Early May', availDot:'soon',  bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'3 min walk to Ride On 26 bus -- connects to NIH campuses (Twinbrook, Fishers Lane, Fernwood, Rockledge, Democracy, Executive Plaza) and Glenmont, Twinbrook, White Flint Metro. 3 miles to Glenmont Metro. ICC, I-495, I-270, Georgia Ave nearby. Close to Universities at Shady Grove campus.', highlight:'1 dedicated parking space. 20 min drive to Holy Cross Hospital, NIH, NOAA, NIST Gaithersburg, AstraZeneca, US Nuclear Regulatory Commission, US Pharmacopeia, Westat, US Dept of Energy Germantown. Two pools, clubhouse, tennis courts, soccer fields, walking trails. Steps to CVS, Starbucks, Aldi, LA Fitness.'},
+  {id:'rv_a', photoUrl:'https://drive.google.com/drive/folders/1Z2o5uFByPVlpifuzcjCvEnVi-qkmfukH?usp=drive_link',  name:'Oriental St -- Room A',       tier:'standard',    city:'Rockville, MD 20853',      rent:'$900', avail:'June 1',    availDot:'later', bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'3 min walk to Ride On 26 bus stop. Walking distance to Q2 bus stop. Bus connects to NIH campuses (Twinbrook, Fishers Lane, Fernwood, Rockledge, Democracy, Executive Plaza) and Glenmont, Twinbrook, White Flint Metro. Convenient to I-270, ICC, I-495, and Georgia Ave. Close to Universities at Shady Grove campus. 20 min drive to Holy Cross Hospital, NIH, NOAA, NIST Gaithersburg, AstraZeneca, US Nuclear Regulatory Commission, US Pharmacopeia, Westat, US Dept of Energy Germantown.', highlight:'Fully remodeled top to bottom. 4-car driveway parking. Walking distance to Aspen Hill Shopping Center and Aspen Hill Library. 2 blocks from Melvin J. Berman Hebrew Academy -- track, basketball courts, and walking trail.'},
+  {id:'rv_b', photoUrl:'https://drive.google.com/drive/folders/1Z2o5uFByPVlpifuzcjCvEnVi-qkmfukH?usp=drive_link',  name:'Oriental St -- Room B',       tier:'standard',    city:'Rockville, MD 20853',      rent:'$900', avail:'June 1',    availDot:'later', bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'3 min walk to Ride On 26 bus stop. Walking distance to Q2 bus stop. Bus connects to NIH campuses (Twinbrook, Fishers Lane, Fernwood, Rockledge, Democracy, Executive Plaza) and Glenmont, Twinbrook, White Flint Metro. Convenient to I-270, ICC, I-495, and Georgia Ave. Close to Universities at Shady Grove campus. 20 min drive to Holy Cross Hospital, NIH, NOAA, NIST Gaithersburg, AstraZeneca, US Nuclear Regulatory Commission, US Pharmacopeia, Westat, US Dept of Energy Germantown.', highlight:'Fully remodeled top to bottom. 4-car driveway parking. Walking distance to Aspen Hill Shopping Center and Aspen Hill Library. 2 blocks from Melvin J. Berman Hebrew Academy -- track, basketball courts, and walking trail.'},
+  {id:'rv_c', photoUrl:'https://drive.google.com/drive/folders/1Z2o5uFByPVlpifuzcjCvEnVi-qkmfukH?usp=drive_link',  name:'Oriental St -- Room C',       tier:'standard',    city:'Rockville, MD 20853',      rent:'$900', avail:'June 1',    availDot:'later', bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'3 min walk to Ride On 26 bus stop. Walking distance to Q2 bus stop. Bus connects to NIH campuses (Twinbrook, Fishers Lane, Fernwood, Rockledge, Democracy, Executive Plaza) and Glenmont, Twinbrook, White Flint Metro. Convenient to I-270, ICC, I-495, and Georgia Ave. Close to Universities at Shady Grove campus. 20 min drive to Holy Cross Hospital, NIH, NOAA, NIST Gaithersburg, AstraZeneca, US Nuclear Regulatory Commission, US Pharmacopeia, Westat, US Dept of Energy Germantown.', highlight:'Fully remodeled top to bottom. 4-car driveway parking. Walking distance to Aspen Hill Shopping Center and Aspen Hill Library. 2 blocks from Melvin J. Berman Hebrew Academy -- track, basketball courts, and walking trail.'},
+  {id:'riv_a', photoUrl:'https://drive.google.com/drive/folders/1Vpsuqv-4OLi9NxQYAzjmJIQ3gYB4F2ui?usp=sharing', name:'59th Ave -- Basement',tier:'hard_local',  city:'Riverdale, MD 20737',      rent:'$800', avail:'May 1',     availDot:'soon',  bath:'shared',  furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'College Park-UMD Metro (Green Line, ~2mi). Shuttle-UM route nearby. Easy DC commute via Green Line direct to downtown. Close to shopping, restaurants, and parks.', highlight:'Off-street parking. Basement unit in 3BR home.'},
+];
+
+var selectedUnit = null;
+var selectedPlatform = null;
+var activeTab = 'broadcast';
+
+function inclusions(u){
+  var i=[];
+  if(u.furnished) i.push('fully furnished');
+  if(u.utilities) i.push('all utilities included');
+  if(u.wifi) i.push('high-speed wifi');
+  if(u.laundry) i.push('in-unit washer/dryer');
+  if(u.parking){
+    i.push(u.highlight&&u.highlight.toLowerCase().includes('dedicated')?'1 dedicated parking space':'off-street parking');
+  } else if(u.highlight&&u.highlight.toLowerCase().includes('street parking')){
+    i.push('street parking (no ticketing or towing)');
+  }
+  return i;
+}
+
+function bathStr(b){ return b==='shared2'?'shared (2 housemates total)':b==='shared'?'shared':'private'; }
+
+function bathLine(b){
+  if(b==='shared2') return 'Private bedroom. Shared bath -- 2 housemates total in the home.';
+  if(b==='shared') return 'Private bedroom. Shared bath.';
+  return 'Private bedroom and private bath.';
+}
+
+function filterLine(u){
+  return u.tier==='hard_trust'||u.tier==='hard_local'
+    ? 'Credit score 650+ preferred. Income generally 3x monthly rent. Overall profile considered -- travel professionals and international applicants welcome.'
+    : 'Credit score 650+ preferred. Income 3x monthly rent. No prior evictions.';
+}
+
+function trustBlock(u){
+  if(u.tier==='hard_trust') return 'Current housemates are working professionals -- quiet, co-ed household. The street is residential and well-kept.';
+  if(u.tier==='hard_local') return 'Clean, well-maintained home with professional housemates.';
+  return 'Screened professional housemates. Well-maintained home.';
+}
+
+function generateRoomies(u){
+  var isNow = u.avail.toLowerCase()==='now';
+  var availStr = isNow ? 'now' : u.avail;
+  var bath = bathStr(u.bath);
+  var incs = inclusions(u);
+  var transitShort = u.transit.split('.')[0];
+
+  if(u.tier==='hard_trust'){
+    return 'Hi [Name], saw you\'re looking for housing -- I have a furnished room available '+availStr+' in NE DC at '+u.rent+'/mo, everything included (utilities, wifi, laundry). '+bathLine(u.bath)+' Bus stop is 2-3 min away with direct Metro access. Screened housemates, min 3 months. Happy to send more details if you\'re still searching.';
+  }
+  if(u.tier==='hard_local'){
+    return 'Hi [Name], saw you\'re looking for housing -- I have a furnished room available '+availStr+' in '+u.city+' at '+u.rent+'/mo, all-inclusive (utilities, wifi, laundry). '+bathLine(u.bath)+' Easy DC commute, professional housemates. Min 3 months. Happy to share more info if you\'re still looking.';
+  }
+  return 'Hi [Name], saw you\'re looking for housing -- I have a furnished room available '+availStr+' in '+u.city+' at '+u.rent+'/mo, everything included (utilities, wifi, laundry). '+bathLine(u.bath)+' '+transitShort+'. Screened housemates, min 3 months. Happy to send details if you\'re still searching.';
+}
+
+function generateBroadcast(u, destId){
+  var isNow = u.avail.toLowerCase()==='now';
+  var availStr = isNow ? 'available now' : 'available '+u.avail;
+  var incs = inclusions(u);
+  var incsShort = incs.slice(0,3).join(', ');
+
+  if(destId==='groupme_general'){
+    if(u.tier==='hard_trust') return 'Room '+availStr+' in NE DC -- '+u.rent+'/mo all-inclusive. Furnished, utilities, wifi, laundry all covered. Bus stop 3 min walk, direct to Metro. Good for relocators and locals upgrading their situation. Screened housemates, min 3 months. https://mitsecurestay.carrd.co';
+    if(u.tier==='hard_local') return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo flat -- everything included. No extra bills, no setup. Good for locals looking for a clean, all-inclusive situation. Professional housemates, easy DC commute. Min 3 months.\n\nhttps://mitsecurestay.carrd.co';
+    return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive. Utilities, wifi, and laundry covered. Good fit for relocators and locals alike. Screened housemates, min 3 months.\n\nhttps://mitsecurestay.carrd.co';
+  }
+
+  if(destId==='groupme_howard'){
+    if(u.tier==='hard_local') return 'Howard grad students and post-grads -- furnished room '+availStr+' in '+u.city+' at '+u.rent+'/mo. Utilities, wifi, and laundry included. '+bathLine(u.bath)+' Easy ride to Howard. Screened housemates, min 3 months. https://mitsecurestay.carrd.co';
+    if(u.tier==='hard_trust') return 'Howard students -- furnished room '+availStr+' in NE DC at '+u.rent+'/mo, all-inclusive. '+bathLine(u.bath)+' Bus stop 2-3 min walk, direct Metro to Howard. Screened housemates, min 3 months. https://mitsecurestay.carrd.co';
+    return 'Howard grad students and post-grads -- furnished room '+availStr+' in '+u.city+'. '+u.rent+'/mo covers utilities, wifi, and laundry. '+bathLine(u.bath)+' Screened housemates, min 3 months. https://mitsecurestay.carrd.co';
+  }
+
+  if(destId==='fb_students'){
+    var uniLine = '';
+    if(u.id==='dcn_b'||u.id==='dcn_c') uniLine = 'Great for Howard, GW, and AU students and grad students. Easy Metro access to all three campuses.';
+    else if(u.id==='riv_a') uniLine = 'Close to UMD College Park, Howard University, and Bowie State. Easy DC commute.';
+    else if(u.id==='ss_a') uniLine = 'Convenient to Universities at Shady Grove. Close to NIH and research campuses along I-270.';
+    else if(u.id==='rv_a'||u.id==='rv_b'||u.id==='rv_c') uniLine = 'Convenient to Universities at Shady Grove campus.';
+    else uniLine = 'Easy access to DC-area universities and campuses.';
+
+    if(u.tier==='hard_trust') return '🏠 Furnished room '+availStr+' in NE DC | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u.bath)+'\n✓ Bus stop 2-3 min away, Metro accessible\n✓ Screened professional housemates\n✓ Min 3 months, longer leases welcome\n✓ No broker fees\n\n'+uniLine+'\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
+    if(u.tier==='hard_local') return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u.bath)+'\n✓ Utilities, wifi, and laundry included\n✓ Professional housemates, clean home\n✓ Min 3 months, longer leases welcome\n✓ No broker fees\n\n'+uniLine+'\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
+    return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ Utilities, wifi, and laundry covered\n✓ '+bathLine(u.bath)+'\n✓ Screened professional housemates\n✓ Min 3 months, longer leases welcome\n✓ No broker fees\n\n'+uniLine+'\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
+  }
+
+    if(destId==='fb_general'){
+    if(u.tier==='hard_trust') return '🏠 Furnished room '+availStr+' in NE DC | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u.bath)+'\n✓ Bus stop 2-3 min walk, Metro accessible\n✓ Quiet co-ed household, screened housemates\n✓ Min 3 months, longer leases welcome | No broker fees\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
+    if(u.tier==='hard_local') return 'Furnished room '+availStr+' in '+u.city+' -- '+u.rent+'/mo flat, everything included. '+bathLine(u.bath)+' Whether you\'re moving locally or relocating, this is a straightforward setup: clean home, professional housemates, one payment covers everything.\n\nMin 3 months, longer leases welcome. No broker fees.\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
+    return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ '+incsShort+'\n✓ '+bathLine(u.bath)+'\n✓ '+trustBlock(u)+'\n✓ Min 3 months, longer leases welcome | No broker fees\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
+  }
+  return '';
+}
+
+function generateListing(u, destId){
+  var incs = inclusions(u);
+  var incsStr = incs.join(', ');
+  var bath = bathStr(u.bath);
+  var isNow = u.avail.toLowerCase()==='now';
+  var availLine = isNow ? 'Available now' : 'Available '+u.avail;
+  var filters = filterLine(u);
+  var trust = trustBlock(u);
+
+  var hook = '';
+  if(u.tier==='hard_trust'){
+    hook = isNow
+      ? 'Looking for affordable, move-in ready housing in DC with easy transit access? This room is available now -- fully furnished, all-inclusive, and minutes from the bus.'
+      : 'Lining up DC housing for '+u.avail+'? This fully furnished room has easy bus and Metro access -- everything included in one flat monthly rate.';
+  } else if(u.tier==='hard_local'){
+    hook = isNow
+      ? 'Affordable furnished room available now in '+u.city+'. All-inclusive at '+u.rent+'/mo -- one payment covers everything.'
+      : 'Furnished room opening '+u.avail+' in '+u.city+'. All-inclusive at '+u.rent+'/mo -- utilities, wifi, and laundry covered.';
+  } else {
+    hook = isNow
+      ? 'Need move-in ready housing in '+u.city+'? This furnished room is available now -- everything included at '+u.rent+'/mo.'
+      : 'Planning your move to '+u.city+' for '+u.avail+'? This furnished room is available and ready -- all-inclusive at '+u.rent+'/mo.';
+  }
+
+  // PROFESSIONAL (Zillow, Apartments.com, Roomies)
+  if(destId==='zillow'||destId==='apartments'||destId==='roomies'){
+    return availLine+' -- Furnished Room in '+u.city+' | '+u.rent+'/mo, All Utilities Included'
+      +'\n\n'+hook
+      +'\n\n'+bathLine(u.bath)+'\n\nWhat\'s included: '+incsStr+'.'
+      +'\n\n'+trust
+      +'\n\n'+u.transit+(u.highlight?' '+u.highlight:'')
+      +'\n\nLease terms: Minimum 3 months. '+filters+' Security deposit: '+u.rent+'. Digital lease via RentRedi. No broker fees.'
+      +'\n\nNo tours without a completed application. Apply at https://mitsecurestay.carrd.co';
+  }
+
+  // FURNISHED FINDER (Traveling professional)
+  if(destId==='furnished'){
+    var incBullets = incs.map(function(i){return '  * '+i.charAt(0).toUpperCase()+i.slice(1);}).join('\n');
+    var tParts = u.transit.split('. ').filter(Boolean);
+    var tMain = tParts.slice(0,2).map(function(t){return '  * '+t.trim();}).join('\n');
+    var empParts = tParts.filter(function(t){return /Hospital|NIH|Howard|UMD|NOAA|NIST|AstraZeneca|Nuclear|Pharmacopeia|Energy|Westat/.test(t);});
+    var empBlock = empParts.length?'\n\nNearby employers and institutions:\n'+empParts.map(function(t){return '  * '+t.trim();}).join('\n'):'';
+    var hlBlock = u.highlight?'\n\nProperty highlights: '+u.highlight:'';
+    return u.city+' -- Furnished Room | '+u.rent+'/mo | '+availLine
+      +'\n\n'+hook
+      +'\n\n'+bathLine(u.bath)+'\n\nWhat\'s included:\n'+incBullets
+      +'\n\n'+trust
+      +'\n\nTransit and location:\n'+tMain+empBlock+hlBlock
+      +'\n\nLease: Minimum 3 months. '+filters+' Security deposit: '+u.rent+'. Digital lease via RentRedi.'
+      +'\n\nApply: https://mitsecurestay.carrd.co';
+  }
+
+  // CRAIGSLIST
+  if(destId==='craigslist'){
+    return u.rent+'/mo -- Furnished Room in '+u.city+' ('+availLine+')'
+      +'\n\n'+hook
+      +'\n\nWHAT\'S INCLUDED\n'+'  - '+bathLine(u.bath)+'\n'+incs.map(function(i){return '  - '+i.charAt(0).toUpperCase()+i.slice(1);}).join('\n')
+      +'\n\nTHE HOUSEHOLD\n  '+trust
+      +'\n\nLOCATION AND TRANSIT\n  '+u.transit+(u.highlight?'\n  '+u.highlight:'')
+      +'\n\nLEASE TERMS\n  - Minimum 3 months (longer leases welcome)\n  - '+filters+'\n  - Security deposit: '+u.rent+'\n  - Digital lease via RentRedi\n  - No broker fees'
+      +'\n\nTO APPLY\nNo tours without a completed application.\nhttps://mitsecurestay.carrd.co -- takes 2 minutes.';
+  }
+
+  // FACEBOOK MARKETPLACE
+  if(destId==='facebook_mktpl'){
+    var bulletIncs = incs.map(function(i){return '\u2713 '+i.charAt(0).toUpperCase()+i.slice(1);}).join('\n');
+    var transitFull = '';
+    if(u.id==='dcn_b'||u.id==='dcn_c'){
+      transitFull = 'Transit: Bus stop 2-3 min walk. Three Metro stations nearby -- Benning Road (Blue/Silver, ~0.8mi), Deanwood (Orange, ~1mi), Capitol Heights (Blue/Silver, ~1.2mi). Easy access to downtown DC and Capitol Hill.';
+    } else if(u.id==='ss_a'){
+      transitFull = 'Transit: 3 min walk to Ride On 26 bus -- connects to Glenmont, Twinbrook, and White Flint Metro (Red Line) and NIH campuses. ICC, I-495, I-270, and Georgia Ave nearby.';
+    } else if(u.id==='rv_a'||u.id==='rv_b'||u.id==='rv_c'){
+      transitFull = 'Transit: Ride On 26 and Q2 bus stops walkable. Rockville Metro (Red Line) ~2-3mi. Convenient to I-270, ICC, and Georgia Ave.';
+    } else if(u.id==='riv_a'){
+      transitFull = 'Transit: College Park-UMD Metro (Green Line) ~2mi -- direct to downtown DC. Shuttle-UM route nearby. Easy access to I-495 and US-1.';
+    } else {
+      transitFull = 'Transit: '+u.transit.split('.')[0]+'.';
+    }
+    return '\uD83D\uDECF Furnished room '+(isNow?'available NOW':'available '+u.avail)+' -- '+u.city+' | '+u.rent+'/mo'
+      +'\n\n'+bulletIncs+'\n\u2713 Bathroom '+bath+'\n\u2713 Screened professional housemates\n\u2713 Min 3 months, longer leases welcome | No broker fees'
+      +'\n\n'+transitFull
+      +'\n\nNo tours without application.\n\uD83D\uDC49 https://mitsecurestay.carrd.co'
+      +'\n\n100+ five-star reviews on my Marketplace profile: facebook.com/marketplace/profile/52201881';
+  }
+  return '';
+}
+
+function escHtml(t){return t.replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>');}
+
+function charBadge(len, limit){
+  if(!limit) return '<span class="char-badge char-ok">'+len+' chars</span>';
+  var over = len>limit;
+  return '<span class="char-badge '+(over?'char-warn':'char-ok')+'">'+len+' chars'+(over?' -- over':'')+'</span>';
+}
+
+async function copyText(btn, text){
+  try{
+    await navigator.clipboard.writeText(text);
+    var orig = btn.textContent;
+    btn.textContent='Copied!';
+    setTimeout(function(){btn.textContent=orig;},1800);
+  }catch(e){}
+}
+
+function renderSidebar(){
+  var list = document.getElementById('unitList');
+  list.innerHTML='';
+  var active = units.filter(function(u){return !u.leased;});
+  var leased = units.filter(function(u){return u.leased;});
+  if(active.length===0){
+    var empty=document.createElement('div');
+    empty.style.cssText='font-size:12px;color:var(--hint);padding:4px 0';
+    empty.textContent='No active vacancies';
+    list.appendChild(empty);
+  }
+  active.forEach(function(u){
+    var btn=document.createElement('button');
+    btn.className='unit-btn'+(selectedUnit&&selectedUnit.id===u.id?' active':'');
+    btn.innerHTML='<span class="unit-name"><span class="avail-dot dot-'+u.availDot+'"></span>'+u.name+'</span><span class="unit-meta">'+u.city+' &middot; '+u.rent+'/mo &middot; '+u.avail+'</span>';
+    btn.onclick=function(){selectUnit(u);closeSidebar();};
+    list.appendChild(btn);
+  });
+  if(leased.length>0){
+    var lbl=document.createElement('div');
+    lbl.style.cssText='font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin:14px 0 8px;';
+    lbl.textContent='Leased';
+    list.appendChild(lbl);
+    leased.forEach(function(u){
+      var btn=document.createElement('button');
+      btn.className='unit-btn'+(selectedUnit&&selectedUnit.id===u.id?' active':'');
+      btn.style.opacity='0.45';
+      btn.innerHTML='<span class="unit-name"><span class="avail-dot" style="background:var(--hint)"></span>'+u.name+'</span><span class="unit-meta">'+u.city+' &middot; Leased</span>';
+      btn.onclick=function(){selectUnit(u);closeSidebar();};
+      list.appendChild(btn);
+    });
+  }
+}
+
+function selectUnit(u){
+  selectedUnit=u;
+  selectedPlatform=null;
+  renderSidebar();
+  renderMain();
+  setTab(activeTab);
+}
+
+function setTab(tabId){
+  activeTab = tabId;
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===tabId);});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id==='panel-'+tabId);});
+}
+
+function renderMain(){
+  var main=document.getElementById('mainContent');
+  if(!selectedUnit){
+    main.innerHTML='<div class="placeholder"><div style="font-size:28px;opacity:0.2;margin-bottom:12px">&#9636;</div><div style="font-size:14px;color:var(--muted);margin-bottom:6px">Select a vacancy to get started</div><div style="font-size:12px;color:var(--hint);text-align:center;max-width:220px;line-height:1.7">Tap <strong style="color:var(--muted)">Vacancies</strong> at the top right, then pick a unit from the list.</div></div>';
+    return;
+  }
+  var u=selectedUnit;
+  var incs=inclusions(u);
+  var availClass=u.availDot==='now'?'badge-avail':u.availDot==='soon'?'badge-soon':'';
+  var tierColor=u.tier==='hard_trust'?'var(--danger)':u.tier==='hard_local'?'var(--accent)':'var(--accent2)';
+  var tierBorder=u.tier==='hard_trust'?'rgba(212,117,106,0.5)':u.tier==='hard_local'?'rgba(200,185,122,0.5)':'rgba(143,188,143,0.4)';
+  var tierLabel=u.tier==='hard_trust'?'Hard -- trust':u.tier==='hard_local'?'Hard -- local':'Standard';
+
+  var leasedBanner=u.leased?'<div class="leased-banner"><span>Marked as leased -- hidden from active listings.</span><button class="restore-btn" onclick="restoreUnit(\''+u.id+'\')">Restore</button></div>':'';
+
+  // Broadcast cards HTML
+  var bcastCards = BROADCASTS.map(function(d){
+    var text=generateBroadcast(u,d.id);
+    var len=text.length;
+    return '<div class="bcast-card">'
+      +'<div class="bcast-header">'
+      +'<div><div class="bcast-name">'+d.name+'</div><div class="bcast-type">'+d.type+'</div></div>'
+      +charBadge(len,d.limit)
+      +'</div>'
+      +'<div class="bcast-copy-wrap">'
+      +'<div class="bcast-text" id="btext-'+d.id+'">'+escHtml(text)+'</div>'
+      +'<div class="bcast-footer">'
+      +'<span></span>'
+      +'<button class="copy-btn" onclick="copyText(this,\''+escHtml(text).replace(/'/g,"\\'")+'\')">Copy</button>'
+      +'</div></div></div>';
+  }).join('');
+
+  // Platform dest cards HTML
+  var destCards = PLATFORMS.map(function(d){
+    return '<div class="dest-card'+(selectedPlatform===d.id?' active':'')+'" onclick="selectPlatform(\''+d.id+'\')">'
+      +'<div class="dest-name">'+d.name+'</div>'
+      +'<div class="dest-fmt">'+d.fmt+'</div>'
+      +'</div>';
+  }).join('');
+
+  // Listing copy HTML
+  var listingCopy='<div style="color:var(--hint);font-size:13px;padding:16px 0">Select a platform above to generate listing copy.</div>';
+  if(selectedPlatform){
+    var ltext=generateListing(u,selectedPlatform);
+    var ldest=PLATFORMS.find(function(d){return d.id===selectedPlatform;});
+    var llen=ltext.length;
+    listingCopy='<div class="listing-copy-wrap">'
+      +'<div class="listing-header"><span class="copy-label">Generated listing</span><div style="display:flex;gap:8px;align-items:center">'+charBadge(llen,ldest.limit)+'<button class="copy-btn" onclick="copyText(this,\''+escHtml(ltext).replace(/'/g,"\\'")+'\')">Copy</button></div></div>'
+      +'<div class="listing-box">'+escHtml(ltext)+'</div>'
+      +(ldest.limit?'<div class="copy-note">Limit: '+ldest.limit.toLocaleString()+' chars</div>':'')
+      +(selectedPlatform==='facebook_mktpl'?'<div style="background:rgba(200,185,122,0.08);border:1px solid rgba(200,185,122,0.25);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:12px;color:var(--muted);line-height:1.9"><span style="color:var(--accent);font-weight:500">Weekly repost checklist (every 7 days):</span><br>1. Update availability date to current<br>2. Drop price by $5 (raise it back next week)<br>3. Reorder or swap one photo<br>4. Delete old listing and repost as new -- do not just edit<br><span style="color:var(--hint)">If no inquiry after 3+ weeks: full relist with new photos and rewritten first line.</span></div>':'')
+      +'</div>';
+  }
+
+  main.innerHTML=leasedBanner
+    +'<div class="unit-header">'
+    +'<div class="unit-top">'
+    +'<div class="unit-title"><em>'+u.name+'</em></div>'
+    +(!u.leased?'<button class="lease-btn" onclick="markLeased(\''+u.id+'\')">Mark as leased</button>':'')
+    +(u.photoUrl?'<a href="'+u.photoUrl+'" target="_blank" style="font-family:var(--mono);font-size:11px;padding:5px 14px;border-radius:20px;border:1px solid rgba(200,185,122,0.4);color:var(--accent);text-decoration:none;white-space:nowrap;margin-top:6px;">&#128247; View Photos</a>':'<span style="font-family:var(--mono);font-size:11px;padding:5px 14px;border-radius:20px;border:1px dashed var(--border2);color:var(--hint);white-space:nowrap;margin-top:6px;">No photos yet</span>')
+    +'</div></div>'
+    +'<div class="unit-badges">'
+    +'<span class="badge '+availClass+'">'+(u.avail==='Now'?'Available now':'Available '+u.avail)+'</span>'
+    +'<span class="badge">'+u.rent+'/mo</span>'
+    +'<span class="badge" style="border-color:'+tierBorder+';color:'+tierColor+'">'+tierLabel+'</span>'
+    +incs.map(function(i){return '<span class="badge">'+i+'</span>';}).join('')
+    +'<span class="badge">Bath '+bathStr(u.bath)+'</span>'
+    +'</div></div>'
+    // TABS -- broadcasts first
+    +'<div class="tab-bar">'
+    +'<button class="tab active" data-tab="broadcast" onclick="setTab(\'broadcast\')">Broadcasts</button>'
+    +'<button class="tab" data-tab="scripts" onclick="setTab(\'scripts\')">Message Scripts</button>'
+    +'<button class="tab" data-tab="roomies" onclick="setTab(\'roomies\')">Roomies Outbound</button>'
+    +'<button class="tab" data-tab="listings" onclick="setTab(\'listings\')">Platform Listings</button>'
+    +'</div>'
+    +'<div class="tab-panel active" id="panel-broadcast">'
+    +'<div class="broadcast-grid">'+bcastCards+'</div>'
+    +'<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:16px;font-size:12px;color:var(--hint);line-height:1.9"><span style="color:var(--muted);font-weight:500">How to use:</span> Copy each message and paste into that group. Post one vacancy across all groups in one sitting. Do not swap GroupMe and Facebook messages -- they are formatted differently.</div>'
+    +'</div>'
+    +'<div class="tab-panel" id="panel-scripts">'
+    +(function(){
+      var html = '';
+
+      // Lead Response
+      var textMsg = 'Hi [Name], this is MIT from MIT Secure Stay. I received your housing request and your dates look like a great fit for '+u.city+'. To get the process started, please fill out our short pre-screening form: https://mitsecurestay.carrd.co -- takes about 2 minutes. Feel free to reply here with any questions.';
+      var emailBody = 'Hi [Name],\n\nThank you for your housing request. Your dates look like a great fit for what we have available in '+u.city+'.\n\nTo get the process started, please fill out our short pre-screening form -- it takes about 2 minutes:\nhttps://mitsecurestay.carrd.co\n\nOnce I receive your form I will follow up within 24 hours. Feel free to reply here or text me directly with any questions.\n\nMIT\nMIT Secure Stay\nmitsecurestay@gmail.com';
+      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Lead Response</div><div class="broadcast-grid">';
+      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Text message</div><div class="bcast-type">Send first -- travelers respond faster to text</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] before sending.</div><div class="bcast-text" id="lr-text">'+escHtml(textMsg)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, textMsg)">Copy</button></div></div></div>';
+      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Email reply</div><div class="bcast-type">Follow up if no text reply within a few hours | Subject: Re: Housing Request -- MIT Secure Stay</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] before sending.</div><div class="bcast-text" id="lr-email">'+escHtml(emailBody)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, emailBody)">Copy</button></div></div></div>';
+      html += '</div></div>';
+
+      // Prospect Redirect
+      // Prospect Redirect scripts array for indexed copy buttons
+      var prospectRedirect = [
+        {name:'Move-in date ask', note:'Send immediately when someone responds to a listing', text:'Hey [Name], thanks for reaching out! When are you looking to move in?'},
+        {name:'Budget + location', note:'Send after they give you a move-in date', text:'Got it. What\'s your budget and are you flexible on location?'},
+        {name:'Next steps', note:'Send after qualifying (move-in date, budget, location)', text:'Hi [Name], thanks for your interest!\n\nHere are the next steps:\n\n1. Fill out our quick tenant questionnaire: https://mitsecurestay.carrd.co -- share your preferences and availability.\n\n2. Once you have completed the questionnaire you will be directed to schedule a call. We will discuss any questions and arrange a walkthrough.\n\nBest,\nGreg'},
+        {name:'No availability -- network referral', note:'Send when you do not have a matching space for the prospect', text:'Hi [Name], unfortunately I do not have the space you are looking for available right now. I do work with a network of other property operators in the DC/Maryland area -- if you would like, I can share your info with them and connect you if there is a match. Just fill out our quick form so I have the details to share: https://mitsecurestay.carrd.co. No pressure either way.'},
+      ];
+      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Prospect Redirect</div><div class="broadcast-grid">';
+      prospectRedirect.forEach(function(s,i){ html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] before sending.</div><div class="bcast-text" id="pr'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, prospectRedirect['+i+'].text)">Copy</button></div></div></div>'; });
+      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Comment reply</div><div class="bcast-type">Someone comments on a group post asking if available</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">No property details needed -- just redirect to the form.</div><div class="bcast-text">Hi [Name]! Yes, still available. You can get full details and apply here: https://mitsecurestay.carrd.co -- takes about 2 minutes. Feel free to DM if you have questions.</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\'Hi [Name]! Yes, still available. You can get full details and apply here: https://mitsecurestay.carrd.co -- takes about 2 minutes. Feel free to DM if you have questions.\')">Copy</button></div></div></div>';
+      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">DM reply</div><div class="bcast-type">Someone DMs asking for more info or details</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Keep it short -- one link, one next step.</div><div class="bcast-text">Hi [Name], thanks for reaching out! The best way to get full details and move forward is through our short pre-screening form: https://mitsecurestay.carrd.co -- takes about 2 minutes. Happy to answer any questions after.</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\'Hi [Name], thanks for reaching out! The best way to get full details and move forward is through our short pre-screening form: https://mitsecurestay.carrd.co -- takes about 2 minutes. Happy to answer any questions after.\')">Copy</button></div></div></div>';
+      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Roomies / Craigslist inquiry</div><div class="bcast-type">Someone asks for more info via platform message</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Platform-neutral -- works for any inbound message.</div><div class="bcast-text">Hi [Name], thanks for your interest! To get full details and check availability, please fill out our quick form: https://mitsecurestay.carrd.co -- it only takes 2 minutes and helps us match you to the right room. Looking forward to connecting.</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\'Hi [Name], thanks for your interest! To get full details and check availability, please fill out our quick form: https://mitsecurestay.carrd.co -- it only takes 2 minutes and helps us match you to the right room. Looking forward to connecting.\')">Copy</button></div></div></div>';
+      
+      // Furnished Finder cold outreach -- static opener, one question only
+      var ffText = 'Hi [Name],\n\nGreg from MIT Secure Stay -- saw your Furnished Finder inquiry for the DC/Maryland area.\n\nAre you looking for a room to rent in a shared home, or a private living space?\n\nBest,\nGreg';
+      window.__ffColdText = ffText;
+      
+      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Furnished Finder Outbound</div><div class="bcast-type">Sent when alerted of a traveler inquiry -- qualifies space type first</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">One question only. Their answer tells you which inventory to pitch.</div><div class="bcast-text" id="ffcold">'+escHtml(ffText)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffColdText)">Copy</button></div></div></div>';
+      html += '</div></div>';
+
+      // Follow-Up
+      var followUps = [
+        {name:'Missed appointment', note:'Send within 30 min of a missed call or tour', text:"Hey [Name], it\'s Greg from MIT Secure Stay. Sorry we didn\'t connect today. No worries -- feel free to reschedule at your convenience: https://calendly.com/mitsecurestay. Looking forward to speaking with you."},
+        {name:'Stale prospect nudge', note:'Send if no activity after 3-5 days', text:'Hey [Name], it\'s Greg from MIT Secure Stay. Just checking in -- are you still looking for housing? I have a room available in [City] that may be a great fit. Happy to answer any questions or get you scheduled. https://mitsecurestay.carrd.co'},
+        {name:'Form not completed', note:'Send if prospect expressed interest but never filled out the form', text:'Hey [Name], it\'s Greg from MIT Secure Stay. I wanted to follow up -- the pre-screening form is the first step to getting you set up. It only takes 2 minutes: https://mitsecurestay.carrd.co. Let me know if you have any questions.'},
+        {name:'Call not scheduled', note:'Send after form is completed but no call booked', text:'Hey [Name], it\'s Greg. I received your pre-screening form -- thank you! The next step is a quick call to go over the details. You can grab a time here: https://calendly.com/mitsecurestay. Looking forward to connecting.'}
+      ];
+      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Follow-Up</div><div class="broadcast-grid">';
+      followUps.forEach(function(s,i){ html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="fu'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, followUps['+i+'].text)">Copy</button></div></div></div>'; });
+      html += '</div></div>';
+
+      // Scheduling
+      var scheduling = [
+        {name:'Tour confirmation', note:'Send immediately after a tour is scheduled', text:'Hi [Name], your tour is confirmed! Looking forward to showing you the place. If anything comes up, feel free to reach out or reschedule here: https://calendly.com/mitsecurestay. See you soon.'},
+        {name:'Tour reminder', note:'Send the evening before the scheduled tour', text:'Hey [Name], just a quick reminder about your tour tomorrow. Looking forward to it. If anything changes, let me know or reschedule here: https://calendly.com/mitsecurestay.'}
+      ];
+      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Scheduling</div><div class="broadcast-grid">';
+      scheduling.forEach(function(s,i){ html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="sc'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, scheduling['+i+'].text)">Copy</button></div></div></div>'; });
+      html += '</div></div>';
+
+      // Pipeline
+      var pipeline = [
+        {name:'Application approved', note:'Send after background and credit check clear', text:'Hi [Name], great news -- your application has been approved! The next step is signing your lease. I will be sending it over through RentRedi shortly. Let me know if you have any questions. Welcome to MIT Secure Stay.'},
+        {name:'Moved forward with another applicant', note:'Send when another applicant is selected for the unit', text:'Hi [Name], thank you for your interest in MIT Secure Stay. Unfortunately I moved forward with another applicant for this unit. I will keep your information on file and reach out if something else becomes available that may be a good fit. I appreciate your time.'},
+        {name:'Move-in confirmation', note:'Send 2-3 days before move-in date', text:"Hi [Name], just confirming your move-in for [Date]. Please make sure your security deposit and first month\'s rent are settled before arrival. Looking forward to having you. Reach out if you need anything before then."}
+      ];
+      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Pipeline</div><div class="broadcast-grid">';
+      pipeline.forEach(function(s,i){ html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="pl'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, pipeline['+i+'].text)">Copy</button></div></div></div>'; });
+      html += '</div></div>';
+
+      // Post-Placement
+      var postPlacement = [
+        {name:'Furnished Finder review request', note:'Send 2-4 weeks before move-out or after a positive signal', text:"Hi [Name], it\'s been a pleasure having you. As your stay wraps up, if you\'ve had a good experience I\'d really appreciate a review on Furnished Finder. It helps other travelers find quality housing and means a lot. Thank you."},
+        {name:'Facebook review request', note:'Send 2-4 weeks before move-out or after a positive signal', text:"Hi [Name], it\'s been great having you. If you\'ve had a good experience, I\'d be grateful for a quick review on my Facebook page: facebook.com/mitsecurestay/reviews/?id=100083623381514&sk=reviews -- takes 30 seconds and helps a lot. Thank you!"}
+      ];
+      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Post-Placement</div><div class="broadcast-grid">';
+      postPlacement.forEach(function(s,i){ html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] before sending.</div><div class="bcast-text" id="pp'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, postPlacement['+i+'].text)">Copy</button></div></div></div>'; });
+      html += '</div></div>';
+
+      html += '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:4px;font-size:12px;color:var(--hint);line-height:1.9"><span style="color:var(--muted);font-weight:500">How to use:</span> Copy any script and paste into Google Voice or your messaging app. Replace [Name], [City], and [Date] with the correct details. No other editing needed.</div>';
+      return html;
+    })()
+    +'</div>'
+    +'<div class="tab-panel" id="panel-roomies">'
+    +(function(){
+      var text = generateRoomies(u);
+      var len = text.length;
+      return '<div class="bcast-card">'
+        +'<div class="bcast-header"><div><div class="bcast-name">Roomies.com Outbound</div><div class="bcast-type">Direct message to active profiles</div></div>'+charBadge(len,300)+'</div>'
+        +'<div class="bcast-copy-wrap">'
+        +'<div style="font-size:11px;color:var(--hint);margin-bottom:8px;line-height:1.6">Replace <strong style=\"color:var(--muted)\">[Name]</strong> with their first name before sending.</div>'
+        +'<div class="bcast-text" id="btext-roomies">'+escHtml(text)+'</div>'
+        +'<div class="bcast-footer"><span></span>'
+        +'<button class="copy-btn" onclick="copyText(this,\''+escHtml(text).replace(/'/g,"\\'")+'\')">Copy</button>'
+        +'</div></div></div>'
+        +'<div style="font-size:12px;color:var(--hint);margin-top:16px;line-height:1.8;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px">'
+        +'<span style=\"color:var(--muted);font-weight:500\">How to use:</span> Scan active Roomies profiles, copy this message, replace [Name] with their first name, send. Message anyone showing as active -- var the response filter itself.'
+        +'</div>';
+    })()
+    +'</div>'
+  +'<div class="tab-panel" id="panel-listings">'
+    +'<div class="dest-grid">'+destCards+'</div>'
+    +listingCopy
+    +'<div class="photo-check"><span style="color:var(--muted);font-weight:500">Photo checklist:</span>  1. Bedroom  &middot;  2. Kitchen  &middot;  3. Bathroom  &middot;  4. Exterior  &middot;  5. Common areas</div>'
+    +'</div>';
+}
+
+function selectPlatform(id){
+  selectedPlatform=id;
+  renderMain();
+  setTab('listings');
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function openModal(){document.getElementById('modalOverlay').classList.add('open');}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+
+function addUnit(){
+  var name=document.getElementById('m_name').value.trim();
+  var city=document.getElementById('m_city').value.trim();
+  if(!name||!city) return;
+  var avail=document.getElementById('m_avail').value.trim()||'Now';
+  var rent=document.getElementById('m_rent').value.trim();
+  var dot=avail.toLowerCase()==='now'?'now':'soon';
+  units.push({
+    id:'u_'+Date.now(), name:name, city:city,
+    tier:document.getElementById('m_tier').value,
+    rent:rent.startsWith('$')?rent:'$'+rent,
+    avail:avail, availDot:dot,
+    transit:document.getElementById('m_transit').value.trim(),
+    highlight:document.getElementById('m_highlight').value.trim(),
+    bath:document.getElementById('m_bath').value,
+    furnished:document.getElementById('m_furnished').checked,
+    utilities:document.getElementById('m_utilities').checked,
+    wifi:document.getElementById('m_wifi').checked,
+    laundry:document.getElementById('m_laundry').checked,
+    parking:document.getElementById('m_parking').checked,
+  });
+  closeModal();
+  renderSidebar();
+}
+
+// Phase 2: swap these for Airtable PATCH calls
+function markLeased(id){
+  var u=units.find(function(u){return u.id===id;});
+  if(!u) return;
+  u.leased=true;
+  if(selectedUnit&&selectedUnit.id===id) renderMain();
+  renderSidebar();
+  // Phase 2: airtableUpdateStatus(id,'Occupied');
+}
+function restoreUnit(id){
+  var u=units.find(function(u){return u.id===id;});
+  if(!u) return;
+  u.leased=false;
+  if(selectedUnit&&selectedUnit.id===id) renderMain();
+  renderSidebar();
+  // Phase 2: airtableUpdateStatus(id,'Vacant');
+}
+
+function dismissWelcome(){
+  var overlay = document.getElementById('welcomeOverlay');
+  if(overlay) overlay.classList.remove('open');
+}
+
+renderSidebar();
+</script>
+<div class="modal-overlay open" id="welcomeOverlay">
+  <div class="modal" style="max-width:480px">
+    <div style="text-align:center;margin-bottom:16px"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCABQAFADASIAAhEBAxEB/8QAGwAAAgMBAQEAAAAAAAAAAAAAAAYEBQcBAgP/xAA9EAABAgQBBgoIBgMBAAAAAAABAgMABAURBgcSEzFRYSEiNTZBcXN0sbIUMjdSgZGhwRUjNHKEsxZi8NL/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A06CCCAIIIocUYrp+G5XOfVpZpYu3LpPGVvOwb4CyqlTk6RJLnKg+lplHSdZOwDpO6KPDeOqVX5lUqgLlZi50bbxH5g3EdO7xjMwK/j+t9Kkp6w1LpP8A3WYssS5O52jSyJ2lPOTiGkgugJstBGtQA1j6iA2KCMywZlFvmU/ELnD6rc2fBf8A6+e2NMSoKSFJIIIuCOmA7BBBAEEEZNjrHU5Mzj9IpBWwy2stOuJ4FuEGxA2C/wATAMGMsoEvSc+RpBRMT2pTmtDJ+6t2odOyE3DWEqpi2dVUak86iVWrOcmF8K3TsTfx1D6Rc4MydFzMqGIWylHrNyh1nevZ1fPZFri/HstR0KptD0bs0gZhWkDRsW6B0EjZqH0gLKrVqh4FpKJOVZRpc27Usg8ZR95R+5+ETcHYhOJaQudXLCXUh4tFIXnA2AN7/GMjYw9VqxTZ/EE6taWG21Ol525U8odA3b9UaBki5rTHfFeVEB88Z5PmajpJ+iIQzOHjLZ1Id6tivofrCthXGdQwxNfhlWbdck21Zqmlj8xg/wCt+jd8o2eMoywMtip05aUJDjjawpQHCqxFrn4wGnyE/K1KTbm5F9DzDgulaT/1juiRGGUip1jAldUzNNLDRP5zBPFdT7yTqvsPwjb5d5MxLNPt3zHUBab67EXgPpCnTMJUui1CdrtRcbcfU848HHOBDCSongv07/lDZGd5VZKrzaZJMkl52TIWXG2xwBQ4c5W619eqxgKjGOUF+oqXTqCVtyyuKp4Ahbu5PSB9Tuhdo9Gdl8X0yn1aWA0rrZWyv3VcIBH2hpyRU2TmHZ2efYS5MS6kBpauHMuDcjfwa4K97YpLtWPCAd8YpSjBlTQhISlMqoAAWAFoV8nIUrJ/VQiYEuouPWeJsGzo08a+7XDVjTmfVe7KhbyXSzc5guelXwS0/MONrANjYoSDAVUuxM/huHh/lUtcTjnG07lnOMjgHBwkb7DjQZYOUKV+xfmEMkrhPDDipWnsTannaY6p3RpmElYJKbhYHRdI2QuZYOUKV+xfmEA/V2gyGIKd6LPtXIF23U+u2doP21GJ8mx6LJsS+dnaJtKM61r2Frx9UeoOqOwBEKs8iz3d3PKYmxCrXIk/3ZzymARMjn6Sqdo34KiHXvbFJdqx4RMyOfo6p2jfgYh172xSXaseEA8405n1XuyooMkfNaY74ryoi/xpzPqvdlRQZI+a0x3xXlRAUmBfafWP5H9oj1lg5RpXZr8wjxgT2nVj+R/aI95YOUaV2a/MIDUkeoOqOxxHqDqjsARCrfIc/wB2c8pibHwnZf0uRmJbOzNM2pvOte1wRf6wGf5HP0VT7RvwMQq97YpLtWPCHHB+FhhdiZbE4ZnTqSq5bzM2wI2nbHxn8HJnMYsYg9OKNEpCtDor3zR71/tATsacz6r3ZUUGSPmtMd8V5UQ21mniq0iap5cLQmGi3ngXzb9NogYSw6MNUpckJozOe8XSvMzdYAta52QCNgP2mVjqmP7RHrLByjSuzX5hDTQMG/g2JZysen6b0kODRaLNzc5QVrvw2tHrF+D04nmJR1U8qW9HCgQG87OBIO0W1QDOj1B1R2ACwA2QQH//2Q==" style="width:56px;height:56px;object-fit:contain;" alt="MIT Secure Stay"></div>
+    <div style="font-family:var(--serif);font-size:22px;font-weight:300;margin-bottom:6px;text-align:center">Welcome to <span style="color:var(--accent);font-style:italic">VacancyPost</span></div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--hint);margin-bottom:6px;text-align:center">Tenant Acquisition & Communication Tool</div>
+    <div style="font-size:12px;color:var(--hint);margin-bottom:20px;text-align:center">Post vacancies, respond to leads, and manage tenant communication -- all in one place.</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:20px">This tool generates ready-to-post copy for every platform and group. Here is how to use it:</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="background:var(--accent);color:#0e0e0e;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px">1</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6"><strong style="font-weight:500">Select a vacancy</strong> from the sidebar on the left. On mobile tap <em>Vacancies</em> at the top right.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="background:var(--accent);color:#0e0e0e;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px">2</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6"><strong style="font-weight:500">Pick a tab:</strong><br><em>Broadcasts</em> -- GroupMe and Facebook group posts<br><em>Message Scripts</em> -- lead response, follow-up, scheduling, pipeline, and review texts<br><em>Roomies Outbound</em> -- direct messages to active Roomies.com profiles<br><em>Platform Listings</em> -- Zillow, Craigslist, Furnished Finder, etc.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="background:var(--accent);color:#0e0e0e;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px">3</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6"><strong style="font-weight:500">Select a destination</strong> (e.g. General DMV Housing, Zillow) and the copy generates automatically.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="background:var(--accent);color:#0e0e0e;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px">4</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6"><strong style="font-weight:500">Hit Copy</strong> and paste directly into the platform. For Roomies messages, replace <em>[Name]</em> with their first name before sending.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="background:var(--accent);color:#0e0e0e;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px">5</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6"><strong style="font-weight:500">When a unit is leased</strong>, tap <em>Mark as leased</em> in the unit header so it stops appearing in active listings.</div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:11px 14px;margin-bottom:20px;font-size:12px;color:var(--hint);line-height:1.7">
+      Questions? Contact MIT at <a href="mailto:mitsecurestay@gmail.com" style="color:var(--muted);text-decoration:none;">mitsecurestay@gmail.com</a> &nbsp;|&nbsp; <a href="https://drive.google.com/file/d/1aKW1NjyLazqRkxGUKkZMaU8Tog1zcqxL/view?usp=drive_link" target="_blank" style="color:var(--accent);text-decoration:none;">Read the Posting Guide</a>
+    </div>
+    <button class="btn-primary" onclick="dismissWelcome()" style="width:100%">Got it &mdash; take me to the tool</button>
+  </div>
+</div>
+</body>
+</html>
