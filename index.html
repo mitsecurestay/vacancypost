@@ -250,11 +250,20 @@ var units = [
   {id:'rv_b', photoUrl:'https://drive.google.com/drive/folders/1Z2o5uFByPVlpifuzcjCvEnVi-qkmfukH?usp=drive_link',  name:'Oriental St -- Room B',       tier:'standard',    city:'Rockville, MD 20853',      rent:'$900', avail:'Soon',    availDot:'later', bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'3 min walk to Ride On 26 bus stop. Walking distance to Q2 bus stop. Bus connects to NIH campuses (Twinbrook, Fishers Lane, Fernwood, Rockledge, Democracy, Executive Plaza) and Glenmont, Twinbrook, White Flint Metro. Convenient to I-270, ICC, I-495, and Georgia Ave. Close to Universities at Shady Grove campus. 20 min drive to Holy Cross Hospital, NIH, NOAA, NIST Gaithersburg, AstraZeneca, US Nuclear Regulatory Commission, US Pharmacopeia, Westat, US Dept of Energy Germantown.', highlight:'Fully remodeled top to bottom. 4-car driveway parking. Walking distance to Aspen Hill Shopping Center and Aspen Hill Library. 2 blocks from Melvin J. Berman Hebrew Academy -- track, basketball courts, and walking trail.'},
   {id:'rv_c', photoUrl:'https://drive.google.com/drive/folders/1Z2o5uFByPVlpifuzcjCvEnVi-qkmfukH?usp=drive_link',  name:'Oriental St -- Room C',       tier:'standard',    city:'Rockville, MD 20853',      rent:'$900', avail:'Soon',    availDot:'later', bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'3 min walk to Ride On 26 bus stop. Walking distance to Q2 bus stop. Bus connects to NIH campuses (Twinbrook, Fishers Lane, Fernwood, Rockledge, Democracy, Executive Plaza) and Glenmont, Twinbrook, White Flint Metro. Convenient to I-270, ICC, I-495, and Georgia Ave. Close to Universities at Shady Grove campus. 20 min drive to Holy Cross Hospital, NIH, NOAA, NIST Gaithersburg, AstraZeneca, US Nuclear Regulatory Commission, US Pharmacopeia, Westat, US Dept of Energy Germantown.', highlight:'Fully remodeled top to bottom. 4-car driveway parking. Walking distance to Aspen Hill Shopping Center and Aspen Hill Library. 2 blocks from Melvin J. Berman Hebrew Academy -- track, basketball courts, and walking trail.'},
   {id:'riv_a', photoUrl:'https://drive.google.com/drive/folders/1Vpsuqv-4OLi9NxQYAzjmJIQ3gYB4F2ui?usp=sharing', name:'59th Ave -- Basement',tier:'hard_local',  city:'Riverdale, MD 20737',      rent:'$800', avail:'Soon',     availDot:'soon',  bath:'shared',  furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'College Park-UMD Metro (Green Line, ~2mi). Shuttle-UM route nearby. Easy DC commute via Green Line direct to downtown. Close to shopping, restaurants, and parks.', highlight:'Off-street parking. Basement unit in 3BR home.'},
+  {id:'dcs_pls_02', photoUrl:'https://drive.google.com/drive/folders/1tqt-T09f6RKUohF7qYT_9_5Es4Wje_21?usp=drive_link', name:'Knox Circle -- Basement Suite', tier:'hard_trust',  city:'SE Washington, DC 20020', rent:'$1,650', avail:'Soon', availDot:'soon', bath:'private', furnished:true, utilities:true, wifi:true, laundry:true, parking:true, transit:'Three Metro stations within ~2mi: Naylor Road (Green, ~2mi), Potomac Ave (Blue/Orange/Silver, ~1.5mi), Stadium-Armory (Blue/Orange/Silver, ~2mi). Direct access to Capitol Hill, Navy Yard, and downtown DC.', highlight:'Private entrance and bathroom. Full kitchenette (refrigerator, stovetop, microwave, toaster oven, coffee maker). 65 inch Roku Smart TV. Free off-street parking. Minutes from Cedar Hill Regional Medical Center, Skyland Town Center, Nationals Park, and Navy Yard. Quiet single-family home, homeowners occupy upper levels.'},
 ];
 
 var selectedUnit = null;
 var selectedPlatform = null;
 var activeTab = 'broadcast';
+
+function dcArea(u){ return u.id.indexOf('dcs')===0 ? 'SE DC' : 'NE DC'; }
+
+function shortTransit(u){
+  if(u.id==='dcn_b'||u.id==='dcn_c') return ''+shortTransit(u)+'';
+  if(u.id==='dcs_pls_02') return 'Three Metro stations within ~2mi -- Naylor Rd (Green), Potomac Ave + Stadium-Armory (Blue/Orange/Silver)';
+  return 'Metro accessible';
+}
 
 function inclusions(u){
   var i=[];
@@ -298,7 +307,7 @@ function generateRoomies(u){
   var transitShort = u.transit.split('.')[0];
 
   if(u.tier==='hard_trust'){
-    return 'Hi [Name], saw you\'re looking for housing -- I have a furnished room available '+availStr+' in NE DC at '+u.rent+'/mo, everything included (utilities, wifi, laundry). '+bathLine(u.bath)+' Bus stop is 2-3 min away with direct Metro access. Screened housemates, min 3 months. Happy to send more details if you\'re still searching.';
+    return 'Hi [Name], saw you\'re looking for housing -- I have a furnished room available '+availStr+' in '+dcArea(u)+' at '+u.rent+'/mo, everything included (utilities, wifi, laundry). '+bathLine(u.bath)+' '+shortTransit(u)+'. Screened housemates, min 3 months. Happy to send more details if you\'re still searching.';
   }
   if(u.tier==='hard_local'){
     return 'Hi [Name], saw you\'re looking for housing -- I have a furnished room available '+availStr+' in '+u.city+' at '+u.rent+'/mo, all-inclusive (utilities, wifi, laundry). '+bathLine(u.bath)+' Easy DC commute, professional housemates. Min 3 months. Happy to share more info if you\'re still looking.';
@@ -313,14 +322,14 @@ function generateBroadcast(u, destId){
   var incsShort = incs.slice(0,3).join(', ');
 
   if(destId==='groupme_general'){
-    if(u.tier==='hard_trust') return 'Room '+availStr+' in NE DC -- '+u.rent+'/mo all-inclusive. Furnished, utilities, wifi, laundry all covered. Bus stop 3 min walk, direct to Metro. Good for relocators and locals upgrading their situation. Screened housemates, min 3 months. https://mitsecurestay.carrd.co';
+    if(u.tier==='hard_trust') return 'Room '+availStr+' in '+dcArea(u)+' -- '+u.rent+'/mo all-inclusive. Furnished, utilities, wifi, laundry all covered. '+shortTransit(u)+'. Good for relocators and locals upgrading their situation. Screened housemates, min 3 months. https://mitsecurestay.carrd.co';
     if(u.tier==='hard_local') return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo flat -- everything included. No extra bills, no setup. Good for locals looking for a clean, all-inclusive situation. Professional housemates, easy DC commute. Min 3 months.\n\nhttps://mitsecurestay.carrd.co';
     return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive. Utilities, wifi, and laundry covered. Good fit for relocators and locals alike. Screened housemates, min 3 months.\n\nhttps://mitsecurestay.carrd.co';
   }
 
   if(destId==='groupme_howard'){
     if(u.tier==='hard_local') return 'Howard grad students and post-grads -- furnished room '+availStr+' in '+u.city+' at '+u.rent+'/mo. Utilities, wifi, and laundry included. '+bathLine(u.bath)+' Easy ride to Howard. Screened housemates, min 3 months. https://mitsecurestay.carrd.co';
-    if(u.tier==='hard_trust') return 'Howard students -- furnished room '+availStr+' in NE DC at '+u.rent+'/mo, all-inclusive. '+bathLine(u.bath)+' Bus stop 2-3 min walk, direct Metro to Howard. Screened housemates, min 3 months. https://mitsecurestay.carrd.co';
+    if(u.tier==='hard_trust') return 'Howard students -- furnished room '+availStr+' in '+dcArea(u)+' at '+u.rent+'/mo, all-inclusive. '+bathLine(u.bath)+' '+shortTransit(u)+'. Screened housemates, min 3 months. https://mitsecurestay.carrd.co';
     return 'Howard grad students and post-grads -- furnished room '+availStr+' in '+u.city+'. '+u.rent+'/mo covers utilities, wifi, and laundry. '+bathLine(u.bath)+' Screened housemates, min 3 months. https://mitsecurestay.carrd.co';
   }
 
@@ -329,16 +338,17 @@ function generateBroadcast(u, destId){
     if(u.id==='dcn_b'||u.id==='dcn_c') uniLine = 'Great for Howard, GW, and AU students and grad students. Easy Metro access to all three campuses.';
     else if(u.id==='riv_a') uniLine = 'Close to UMD College Park, Howard University, and Bowie State. Easy DC commute.';
     else if(u.id==='ss_a') uniLine = 'Convenient to Universities at Shady Grove. Close to NIH and research campuses along I-270.';
+    else if(u.id==='dcs_pls_02') uniLine = 'Great for Howard, GW, AU, and Georgetown grad students. Direct Metro access to all four campuses via Blue/Orange/Silver lines.';
     else if(u.id==='rv_a'||u.id==='rv_b'||u.id==='rv_c') uniLine = 'Convenient to Universities at Shady Grove campus.';
     else uniLine = 'Easy access to DC-area universities and campuses.';
 
-    if(u.tier==='hard_trust') return '🏠 Furnished room '+availStr+' in NE DC | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u.bath)+'\n✓ Bus stop 2-3 min away, Metro accessible\n✓ Screened professional housemates\n✓ Min 3 months, longer leases welcome\n✓ No broker fees\n\n'+uniLine+'\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
+    if(u.tier==='hard_trust') return '🏠 Furnished room '+availStr+' in '+dcArea(u)+' | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u.bath)+'\n✓ '+shortTransit(u)+'\n✓ Screened professional housemates\n✓ Min 3 months, longer leases welcome\n✓ No broker fees\n\n'+uniLine+'\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
     if(u.tier==='hard_local') return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u.bath)+'\n✓ Utilities, wifi, and laundry included\n✓ Professional housemates, clean home\n✓ Min 3 months, longer leases welcome\n✓ No broker fees\n\n'+uniLine+'\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
     return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ Utilities, wifi, and laundry covered\n✓ '+bathLine(u.bath)+'\n✓ Screened professional housemates\n✓ Min 3 months, longer leases welcome\n✓ No broker fees\n\n'+uniLine+'\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
   }
 
     if(destId==='fb_general'){
-    if(u.tier==='hard_trust') return '🏠 Furnished room '+availStr+' in NE DC | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u.bath)+'\n✓ Bus stop 2-3 min walk, Metro accessible\n✓ Quiet co-ed household, screened housemates\n✓ Min 3 months, longer leases welcome | No broker fees\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
+    if(u.tier==='hard_trust') return '🏠 Furnished room '+availStr+' in '+dcArea(u)+' | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u.bath)+'\n✓ '+shortTransit(u)+'\n✓ Quiet co-ed household, screened housemates\n✓ Min 3 months, longer leases welcome | No broker fees\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
     if(u.tier==='hard_local') return 'Furnished room '+availStr+' in '+u.city+' -- '+u.rent+'/mo flat, everything included. '+bathLine(u.bath)+' Whether you\'re moving locally or relocating, this is a straightforward setup: clean home, professional housemates, one payment covers everything.\n\nMin 3 months, longer leases welcome. No broker fees.\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
     return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ '+incsShort+'\n✓ '+bathLine(u.bath)+'\n✓ '+trustBlock(u)+'\n✓ Min 3 months, longer leases welcome | No broker fees\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
   }
@@ -420,6 +430,8 @@ function generateListing(u, destId){
       transitFull = 'Transit: Ride On 26 and Q2 bus stops walkable. Rockville Metro (Red Line) ~2-3mi. Convenient to I-270, ICC, and Georgia Ave.';
     } else if(u.id==='riv_a'){
       transitFull = 'Transit: College Park-UMD Metro (Green Line) ~2mi -- direct to downtown DC. Shuttle-UM route nearby. Easy access to I-495 and US-1.';
+    } else if(u.id==='dcs_pls_02'){
+      transitFull = 'Transit: Three Metro stations within ~2mi -- Naylor Road (Green), Potomac Ave (Blue/Orange/Silver), Stadium-Armory (Blue/Orange/Silver). Direct access to Capitol Hill, Navy Yard, and downtown DC. Minutes from Cedar Hill Regional Medical Center.';
     } else {
       transitFull = 'Transit: '+u.transit.split('.')[0]+'.';
     }
