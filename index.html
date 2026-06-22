@@ -315,7 +315,7 @@ function generateBroadcast(u, destId){
   }
     if(destId==='fb_general'){
     if(u.tier==='hard_trust') return '🏠 Furnished room '+availStr+' in '+dcArea(u)+' | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u.bath)+'\n✓ '+shortTransit(u)+'\n✓ Quiet co-ed household, screened housemates\n✓ No broker fees\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
-    if(u.tier==='hard_local') return 'Furnished room '+availStr+' in '+u.city+' -- '+u.rent+'/mo flat, everything included. '+bathLine(u.bath)+' Whether you\'re moving locally or relocating, this is a straightforward setup: clean home, professional housemates, one payment covers everything.\n\n. No broker fees.\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
+    if(u.tier==='hard_local') return 'Furnished room '+availStr+' in '+u.city+' -- '+u.rent+'/mo flat, everything included. '+bathLine(u.bath)+' Whether you\'re moving locally or relocating, this is a straightforward setup: clean home, professional housemates, one payment covers everything.\n\nNo broker fees.\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
     return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ '+incsShort+'\n✓ '+bathLine(u.bath)+'\n✓ '+trustBlock(u)+'\n✓ No broker fees\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
   }
 
@@ -324,7 +324,7 @@ function generateBroadcast(u, destId){
   }
 
   if(destId==='cg_marketplace'){
-    return 'Looking for a furnished room or private living space in DC or Maryland? Check out our active listings on Facebook Marketplace -- 100+ five-star reviews from past tenants.\n\nView listings: facebook.com/marketplace/profile/52201881\n\nNot sure which property fits your commute? Use our calculator: https://mitsecurestay.github.io/routecheck/';
+    return 'Looking for a furnished room or private living space in DC or Maryland? Check out our active listings on Facebook Marketplace -- 100+ five-star reviews.\n\nView listings: facebook.com/marketplace/profile/52201881\n\nNot sure which property fits your commute? Use our calculator: https://mitsecurestay.github.io/routecheck/';
   }
 
   return '';
