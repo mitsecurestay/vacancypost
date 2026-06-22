@@ -210,10 +210,12 @@ html{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14
 </div>
 <script>
 var BROADCASTS = [
-  {id:'groupme_general', name:'General DMV Housing',   type:'GroupMe',        limit:300},
-  {id:'groupme_howard',  name:'Howard GroupMe',        type:'GroupMe',        limit:300},
-  {id:'fb_students',     name:'Student Housing Groups',type:'Facebook Group', limit:500},
-  {id:'fb_general',      name:'General Housing Groups',type:'Facebook Group', limit:500},
+  {id:'groupme_general', name:'General DMV Housing',         type:'GroupMe',        limit:300},
+  {id:'groupme_howard',  name:'Howard GroupMe',              type:'GroupMe',        limit:300},
+  {id:'fb_students',     name:'Student Housing Groups',      type:'Facebook Group', limit:500},
+  {id:'fb_general',      name:'General Housing Groups',      type:'Facebook Group', limit:500},
+  {id:'cg_routecheck',   name:'RouteCheck Traffic Driver',   type:'Cross-Group',    limit:500},
+  {id:'cg_marketplace',  name:'Marketplace Traffic Driver',  type:'Cross-Group',    limit:500},
 ];
 var PLATFORMS = [
   {id:'zillow',         name:'Zillow',               fmt:'Professional', limit:2000},
@@ -316,6 +318,15 @@ function generateBroadcast(u, destId){
     if(u.tier==='hard_local') return 'Furnished room '+availStr+' in '+u.city+' -- '+u.rent+'/mo flat, everything included. '+bathLine(u.bath)+' Whether you\'re moving locally or relocating, this is a straightforward setup: clean home, professional housemates, one payment covers everything.\n\n. No broker fees.\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
     return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ '+incsShort+'\n✓ '+bathLine(u.bath)+'\n✓ '+trustBlock(u)+'\n✓ No broker fees\n\nhttps://mitsecurestay.carrd.co\n\n100+ five-star reviews: facebook.com/marketplace/profile/52201881';
   }
+
+  if(destId==='cg_routecheck'){
+    return 'Need housing in DC or Maryland? Use our commute calculator to see typical transit and driving times from each of our furnished rooms and private living spaces to your job, school, or hospital.\n\nView all properties: https://mitsecurestay.github.io/routecheck/\n\n100+ five-star reviews on Facebook Marketplace: facebook.com/marketplace/profile/52201881';
+  }
+
+  if(destId==='cg_marketplace'){
+    return 'Looking for a furnished room or private living space in DC or Maryland? Check out our active listings on Facebook Marketplace -- 100+ five-star reviews from past tenants.\n\nView listings: facebook.com/marketplace/profile/52201881\n\nNot sure which property fits your commute? Use our calculator: https://mitsecurestay.github.io/routecheck/';
+  }
+
   return '';
 }
 function generateListing(u, destId){
