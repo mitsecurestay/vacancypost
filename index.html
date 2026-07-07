@@ -44,36 +44,64 @@ html{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14
 .add-btn{display:flex;align-items:center;justify-content:center;width:100%;text-align:center;padding:10px;background:transparent;border:1px dashed var(--border2);border-radius:6px;font-family:var(--mono);font-size:11px;color:var(--hint);cursor:pointer;transition:all 0.12s;min-height:40px;}
 .add-btn:hover{border-color:var(--accent);color:var(--accent);}
 /* ── MAIN ── */
-.main{padding:36px 48px;width:100%;}
+.main{padding:24px 48px;width:100%;}
 .placeholder{display:flex;align-items:center;justify-content:center;min-height:60vh;color:var(--hint);font-size:13px;flex-direction:column;gap:8px;text-align:center;}
 /* ── UNIT HEADER ── */
-.unit-header{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border);}
-.unit-title{font-family:var(--serif);font-size:26px;font-weight:300;letter-spacing:-0.02em;line-height:1.2;}
+.unit-header{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.unit-title{font-family:var(--serif);font-size:21px;font-weight:300;letter-spacing:-0.02em;line-height:1.15;}
 .unit-title em{font-style:italic;color:var(--accent);}
-.unit-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.unit-top{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+.unit-badges{display:flex;flex-wrap:wrap;gap:5px;}
+.badge{font-size:10px;padding:2px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);}
 .unit-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;margin-top:4px;}
-.unit-badges{display:flex;flex-wrap:wrap;gap:6px;}
-.badge{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);}
 .badge-avail{border-color:var(--accent2);color:var(--accent2);}
 .badge-soon{border-color:var(--accent);color:var(--accent);}
 .lease-btn{font-family:var(--mono);font-size:11px;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap;}
 .lease-btn:hover{border-color:var(--danger);color:var(--danger);}
 /* ── TABS ── */
-.tab-bar{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border);}
-.tab{font-family:var(--mono);font-size:12px;font-weight:500;padding:10px 20px;background:transparent;border:none;color:var(--hint);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s;letter-spacing:0.03em;text-transform:uppercase;}
+.tab-bar{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--border);}
+.tab{font-family:var(--mono);font-size:12px;font-weight:500;padding:10px 16px;background:transparent;border:none;color:var(--hint);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s;letter-spacing:0.03em;text-transform:uppercase;}
+.tab-verb{color:var(--accent2);font-weight:600;margin-right:5px;opacity:0.75;}
+.tab.active .tab-verb{opacity:1;}
+.tab[data-verb="respond"]:first-of-type,.tab[data-tab="scripts"]{border-left:1px solid var(--border);margin-left:8px;padding-left:20px;}
 .tab:hover{color:var(--muted);}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .tab-panel{display:none;}
 .tab-panel.active{display:block;}
+/* ── SEARCH BAR ── */
+.tmpl-search-wrap{position:sticky;top:0;z-index:30;background:var(--bg);padding:12px 0 14px;margin-bottom:4px;}
+.tmpl-search-inner{position:relative;display:flex;align-items:center;}
+.tmpl-search-icon{position:absolute;left:14px;font-size:14px;color:var(--hint);pointer-events:none;}
+#tmplSearch{width:100%;font-family:var(--sans);font-size:14px;padding:11px 40px 11px 38px;border-radius:22px;border:1px solid var(--border2);background:var(--surface);color:var(--text);outline:none;transition:border-color 0.15s;}
+#tmplSearch:focus{border-color:var(--accent);}
+#tmplSearch::placeholder{color:var(--hint);}
+.tmpl-search-clear{position:absolute;right:12px;width:22px;height:22px;border-radius:50%;border:none;background:var(--border);color:var(--muted);font-size:14px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;padding:0;}
+.tmpl-search-clear.show{display:flex;}
+.tmpl-search-count{font-family:var(--mono);font-size:11px;color:var(--hint);margin-top:8px;padding-left:4px;min-height:14px;}
+.search-hit{background:rgba(200,185,122,0.28);border-radius:3px;padding:0 2px;color:var(--text);}
+.card-hidden{display:none !important;}
+.section-hidden{display:none !important;}
+mark.search-hit{color:inherit;}
+/* ── PASS 3: HIERARCHY ── */
+.help-note{font-size:10px;color:var(--hint);margin-bottom:8px;display:flex;align-items:center;gap:5px;opacity:0.8;}
+.help-note::before{content:"\24D8";font-size:11px;opacity:0.7;flex-shrink:0;}
+.help-note strong{color:var(--muted);font-weight:500;}
+.sec-head{font-family:var(--mono);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--accent2);display:flex;align-items:center;gap:8px;}
+.sec-head .sec-count{font-size:10px;font-weight:400;letter-spacing:0.04em;color:var(--hint);text-transform:none;}
+/* category accent borders on script cards */
+.bcast-card[data-cat="respond"]{border-left:3px solid rgba(90,125,181,0.55);}
+.bcast-card[data-cat="followup"]{border-left:3px solid rgba(200,149,90,0.55);}
+.bcast-card[data-cat="pipeline"]{border-left:3px solid rgba(122,168,134,0.55);}
+.bcast-card[data-cat="review"]{border-left:3px solid rgba(155,123,181,0.55);}
 /* ── BROADCAST CARDS -- 2 col on desktop ── */
-.broadcast-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:8px;}
-.bcast-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.12s;display:flex;flex-direction:column;}
+.broadcast-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px;}
+.bcast-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden;transition:border-color 0.12s;display:flex;flex-direction:column;}
 .bcast-card:hover{border-color:var(--border2);}
-.bcast-header{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;}
+.bcast-header{padding:11px 14px 8px;display:flex;align-items:center;justify-content:space-between;}
 .bcast-name{font-size:12px;font-weight:500;color:var(--text);}
 .bcast-type{font-size:11px;color:var(--hint);margin-top:2px;}
-.bcast-copy-wrap{padding:0 16px 16px;flex:1;display:flex;flex-direction:column;}
-.bcast-text{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-size:13px;line-height:1.75;color:var(--text);white-space:pre-wrap;word-break:break-word;flex:1;}
+.bcast-copy-wrap{padding:0 14px 12px;flex:1;display:flex;flex-direction:column;}
+.bcast-text{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:13px;line-height:1.6;color:var(--text);white-space:pre-wrap;word-break:break-word;flex:1;}
 .bcast-footer{display:flex;align-items:center;justify-content:flex-end;margin-top:10px;}
 .char-badge{font-size:11px;padding:2px 8px;border-radius:20px;margin-right:8px;}
 .char-ok{border:1px solid rgba(143,188,143,0.4);color:var(--accent2);}
@@ -87,6 +115,7 @@ html{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14
 .dest-card:hover{border-color:var(--border2);background:var(--surface2);}
 .dest-card.active{border-color:var(--accent);background:var(--surface2);}
 .dest-name{font-size:12px;font-weight:500;color:var(--text);}
+.dest-glyph{margin-right:6px;font-size:13px;opacity:0.85;}
 .dest-fmt{font-size:11px;color:var(--hint);margin-top:2px;}
 .dest-card.active .dest-fmt{color:var(--muted);}
 .listing-copy-wrap{margin-top:4px;}
@@ -218,11 +247,11 @@ var BROADCASTS = [
   {id:'cg_marketplace',  name:'Marketplace Traffic Driver',  type:'Cross-Group',    limit:500},
 ];
 var PLATFORMS = [
-  {id:'zillow',         name:'Zillow',               fmt:'Professional', limit:2000},
-  {id:'roomies',        name:'Roomies.com',           fmt:'Professional', limit:800},
-  {id:'furnished',      name:'Furnished Finder',      fmt:'Traveling professional', limit:1500},
-  {id:'craigslist',     name:'Craigslist',            fmt:'Scroll-stopping', limit:null},
-  {id:'facebook_mktpl', name:'Facebook Marketplace',  fmt:'Scroll-stopping', limit:500},
+  {id:'zillow',         name:'Zillow',               fmt:'Professional', limit:2000, cue:'#5a7db5', glyph:'&#127968;'},
+  {id:'roomies',        name:'Roomies.com',           fmt:'Professional', limit:800, cue:'#7aa886', glyph:'&#128101;'},
+  {id:'furnished',      name:'Furnished Finder',      fmt:'Traveling professional', limit:1500, cue:'#c8955a', glyph:'&#127973;'},
+  {id:'craigslist',     name:'Craigslist',            fmt:'Scroll-stopping', limit:null, cue:'#9b7bb5', glyph:'&#128196;'},
+  {id:'facebook_mktpl', name:'Facebook Marketplace',  fmt:'Scroll-stopping', limit:500, cue:'#5b7fb5', glyph:'&#128717;'},
 ];
 var units = [
   {id:'dcn_b', photoUrl:'https://drive.google.com/drive/folders/1JzH4PbAllJoBNwCHxmNOLfxl7L0VimN6?usp=drive_link', name:'Jay St NE -- Room B',          tier:'hard_trust',  city:'NE Washington, DC 20019', rent:'$925', avail:'Now',       availDot:'now',   bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:false, transit:'Bus stop 2-3 min walk. Three Metro stations nearby: Benning Road (Blue/Silver, ~0.8mi), Deanwood (Orange, ~1mi), Capitol Heights (Blue/Silver, ~1.2mi). Easy access to downtown DC and Capitol Hill.', highlight:'Street parking, no ticketing or towing.', routeCheckUrl:'https://mitsecurestay.com/routecheck/jay-st.html'},
@@ -469,6 +498,80 @@ function setTab(tabId){
   document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===tabId);});
   document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id==='panel-'+tabId);});
 }
+// ── TEMPLATE SEARCH ──────────────────────────────────
+var __searchActive=false;
+function stripHits(el){
+  // remove previous highlight marks, restoring original text
+  el.querySelectorAll('mark.search-hit').forEach(function(m){
+    var t=document.createTextNode(m.textContent);
+    m.parentNode.replaceChild(t,m);
+  });
+  el.normalize();
+}
+function highlightIn(el,q){
+  // walk text nodes, wrap matches in <mark>
+  var rx=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  var walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null,false);
+  var nodes=[];
+  while(walker.nextNode()){nodes.push(walker.currentNode);}
+  nodes.forEach(function(node){
+    if(node.parentNode&&node.parentNode.classList&&node.parentNode.classList.contains('search-hit'))return;
+    if(rx.test(node.nodeValue)){
+      var span=document.createElement('span');
+      span.innerHTML=node.nodeValue.replace(rx,'<mark class="search-hit">$1</mark>');
+      node.parentNode.replaceChild(span,node);
+    }
+  });
+}
+function filterTemplates(raw){
+  var q=(raw||'').trim();
+  var clearBtn=document.getElementById('tmplSearchClear');
+  var countEl=document.getElementById('tmplSearchCount');
+  var cards=document.querySelectorAll('.tab-panel .bcast-card, .tab-panel .dest-card');
+  // clear old highlights first
+  cards.forEach(function(c){stripHits(c);});
+  if(!q){
+    __searchActive=false;
+    clearBtn.classList.remove('show');
+    countEl.textContent='';
+    // restore normal tab view
+    cards.forEach(function(c){c.classList.remove('card-hidden');});
+    document.querySelectorAll('.tab-panel').forEach(function(p){
+      p.style.display='';
+      p.querySelectorAll('[data-search-section]').forEach(function(s){s.classList.remove('section-hidden');});
+    });
+    setTab(activeTab);
+    return;
+  }
+  __searchActive=true;
+  clearBtn.classList.add('show');
+  var ql=q.toLowerCase();
+  var matches=0;
+  // Show ALL panels at once during search (cross-tab)
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.style.display='block';});
+  cards.forEach(function(c){
+    var txt=c.textContent.toLowerCase();
+    if(txt.indexOf(ql)>-1){
+      c.classList.remove('card-hidden');
+      highlightIn(c,q);
+      matches++;
+    } else {
+      c.classList.add('card-hidden');
+    }
+  });
+  // Hide section wrappers that have no visible cards
+  document.querySelectorAll('[data-search-section]').forEach(function(sec){
+    var vis=sec.querySelectorAll('.bcast-card:not(.card-hidden), .dest-card:not(.card-hidden)').length;
+    sec.classList.toggle('section-hidden',vis===0);
+  });
+  countEl.textContent=matches===0?'No matches -- try a different word':matches+' match'+(matches===1?'':'es')+' across all tabs';
+}
+function clearTemplateSearch(){
+  var inp=document.getElementById('tmplSearch');
+  inp.value='';
+  filterTemplates('');
+  inp.focus();
+}
 function renderMain(){
   var main=document.getElementById('mainContent');
   if(!selectedUnit){
@@ -500,8 +603,8 @@ function renderMain(){
   }).join('');
   // Platform dest cards HTML
   var destCards = PLATFORMS.map(function(d){
-    return '<div class="dest-card'+(selectedPlatform===d.id?' active':'')+'" onclick="selectPlatform(\''+d.id+'\')">'
-      +'<div class="dest-name">'+d.name+'</div>'
+    return '<div class="dest-card'+(selectedPlatform===d.id?' active':'')+'" onclick="selectPlatform(\''+d.id+'\')" style="border-left:3px solid '+d.cue+';">'
+      +'<div class="dest-name"><span class="dest-glyph">'+d.glyph+'</span>'+d.name+'</div>'
       +'<div class="dest-fmt">'+d.fmt+'</div>'
       +'</div>';
   }).join('');
@@ -523,8 +626,8 @@ function renderMain(){
     +'<div class="unit-top">'
     +'<div class="unit-title"><em>'+u.name+'</em></div>'
     +(!u.leased?'<button class="lease-btn" onclick="markLeased(\''+u.id+'\')">Mark as leased</button>':'')
-    +(u.photoUrl?'<a href="'+u.photoUrl+'" target="_blank" style="font-family:var(--mono);font-size:11px;padding:5px 14px;border-radius:20px;border:1px solid rgba(200,185,122,0.4);color:var(--accent);text-decoration:none;white-space:nowrap;margin-top:6px;">&#128247; View Photos</a>':'<span style="font-family:var(--mono);font-size:11px;padding:5px 14px;border-radius:20px;border:1px dashed var(--border2);color:var(--hint);white-space:nowrap;margin-top:6px;">No photos yet</span>')
-    +(u.routeCheckUrl?'<a href="'+u.routeCheckUrl+'" target="_blank" style="font-family:var(--mono);font-size:11px;padding:5px 14px;border-radius:20px;border:1px solid rgba(143,188,143,0.4);color:var(--accent2);text-decoration:none;white-space:nowrap;margin-top:6px;">🗺 RouteCheck</a>':'')
+    +(u.photoUrl?'<a href="'+u.photoUrl+'" target="_blank" style="font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid rgba(200,185,122,0.4);color:var(--accent);text-decoration:none;white-space:nowrap;">&#128247; Photos</a>':'<span style="font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:20px;border:1px dashed var(--border2);color:var(--hint);white-space:nowrap;">No photos yet</span>')
+    +(u.routeCheckUrl?'<a href="'+u.routeCheckUrl+'" target="_blank" style="font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid rgba(143,188,143,0.4);color:var(--accent2);text-decoration:none;white-space:nowrap;">🗺 RouteCheck</a>':'')
     +'</div></div>'
     +'<div class="unit-badges">'
     +'<span class="badge '+availClass+'">'+(u.avail==='Now'?'Available now':'Available soon')+'</span>'
@@ -533,12 +636,21 @@ function renderMain(){
     +incs.map(function(i){return '<span class="badge">'+i+'</span>';}).join('')
     +'<span class="badge">Bath '+bathStr(u.bath)+'</span>'
     +'</div></div>'
+    // SEARCH BAR -- filters all cards across all tabs
+    +'<div class="tmpl-search-wrap">'
+    +'<div class="tmpl-search-inner">'
+    +'<span class="tmpl-search-icon">&#128269;</span>'
+    +'<input type="text" id="tmplSearch" placeholder="Search all templates, scripts, and listings..." oninput="filterTemplates(this.value)" autocomplete="off">'
+    +'<button class="tmpl-search-clear" id="tmplSearchClear" onclick="clearTemplateSearch()" aria-label="Clear search">&#10005;</button>'
+    +'</div>'
+    +'<div class="tmpl-search-count" id="tmplSearchCount"></div>'
+    +'</div>'
     // TABS -- broadcasts first
     +'<div class="tab-bar">'
-    +'<button class="tab active" data-tab="broadcast" onclick="setTab(\'broadcast\')">Broadcasts</button>'
-    +'<button class="tab" data-tab="scripts" onclick="setTab(\'scripts\')">Message Scripts</button>'
-    +'<button class="tab" data-tab="roomies" onclick="setTab(\'roomies\')">Roomies Outbound</button>'
-    +'<button class="tab" data-tab="listings" onclick="setTab(\'listings\')">Platform Listings</button>'
+    +'<button class="tab active" data-tab="broadcast" data-verb="post" onclick="setTab(\'broadcast\')"><span class="tab-verb">Post</span> Groups</button>'
+    +'<button class="tab" data-tab="listings" data-verb="post" onclick="setTab(\'listings\')"><span class="tab-verb">Post</span> Platforms</button>'
+    +'<button class="tab" data-tab="scripts" data-verb="respond" onclick="setTab(\'scripts\')"><span class="tab-verb">Respond</span> Leads</button>'
+    +'<button class="tab" data-tab="roomies" data-verb="respond" onclick="setTab(\'roomies\')"><span class="tab-verb">Respond</span> Roomies</button>'
     +'</div>'
     +'<div class="tab-panel active" id="panel-broadcast">'
     +'<div class="broadcast-grid">'+bcastCards+'</div>'
@@ -550,9 +662,9 @@ function renderMain(){
       // Lead Response
       var textMsg = 'Hi [Name], this is Greg from MIT Secure Stay. I received your housing request and this could be a good fit for what you\'re looking for in '+u.city+'. To get the process started, please fill out our short pre-screening form: https://mitsecurestay.com/apply -- takes about 2 minutes. Feel free to reply here with any questions.';
       var emailBody = 'Hi [Name],\n\nThank you for your housing request. This could be a good fit for what we have available in '+u.city+'.\n\nTo get the process started, please fill out our short pre-screening form -- it takes about 2 minutes:\nhttps://mitsecurestay.com/apply\n\nOnce I receive your form I will follow up within 24 hours. Feel free to reply here or text me directly with any questions.\n\nBest,\nGreg\nMIT Secure Stay\nmitsecurestay@gmail.com';
-      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Lead Response</div><div class="broadcast-grid">';
-      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Text message</div><div class="bcast-type">Send first -- travelers respond faster to text</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] before sending.</div><div class="bcast-text" id="lr-text">'+escHtml(textMsg)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, textMsg)">Copy</button></div></div></div>';
-      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Email reply</div><div class="bcast-type">Follow up if no text reply within a few hours | Subject: Re: Housing Request -- MIT Secure Stay</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] before sending.</div><div class="bcast-text" id="lr-email">'+escHtml(emailBody)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, emailBody)">Copy</button></div></div></div>';
+      html += '<div style="margin-bottom:16px" data-search-section><div class="sec-head">Lead Response</div><div class="broadcast-grid">';
+      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Text message</div><div class="bcast-type">Send first -- travelers respond faster to text</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] before sending.</div><div class="bcast-text" id="lr-text">'+escHtml(textMsg)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, textMsg)">Copy</button></div></div></div>';
+      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Email reply</div><div class="bcast-type">Follow up if no text reply within a few hours | Subject: Re: Housing Request -- MIT Secure Stay</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] before sending.</div><div class="bcast-text" id="lr-email">'+escHtml(emailBody)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, emailBody)">Copy</button></div></div></div>';
       html += '</div></div>';
       // Prospect Redirect
       // Prospect Redirect scripts array for indexed copy buttons
@@ -564,23 +676,23 @@ function renderMain(){
         {name:'Next steps', note:'Send after qualifying (move-in date, budget, location)', text:'Hi [Name], thanks for your interest!\n\nHere are the next steps:\n\n1. Fill out our quick tenant questionnaire: https://mitsecurestay.com/apply -- share your preferences and availability.\n\n2. Once you have completed the questionnaire you will be directed to schedule a call. We will discuss any questions and arrange a walkthrough.\n\nBest,\nGreg'},
         {name:'No availability -- network referral', note:'Send when you do not have a matching space for the prospect', text:'Hi [Name], unfortunately I do not have the space you are looking for available right now. I do work with a network of other property operators in the DC/Maryland area -- if you would like, I can share your info with them and connect you if there is a match. Just fill out our quick form so I have the details to share: https://mitsecurestay.com/apply. No pressure either way.'},
       ];
-      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Prospect Redirect</div><div class="broadcast-grid">';
-      prospectRedirect.forEach(function(s,i){ html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] before sending.</div><div class="bcast-text" id="pr'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, prospectRedirect['+i+'].text)">Copy</button></div></div></div>'; });
-      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Comment reply</div><div class="bcast-type">Someone comments on a group post asking if available</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">No property details needed -- just redirect to the form.</div><div class="bcast-text">Hi [Name]! Yes, still available. You can get full details and apply here: https://mitsecurestay.com/apply -- takes about 2 minutes. Feel free to DM if you have questions.</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\'Hi [Name]! Yes, still available. You can get full details and apply here: https://mitsecurestay.com/apply -- takes about 2 minutes. Feel free to DM if you have questions.\')">Copy</button></div></div></div>';
-      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">DM reply</div><div class="bcast-type">Someone DMs asking for more info or details</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Keep it short -- one link, one next step.</div><div class="bcast-text">Hi [Name], thanks for reaching out! The best way to get full details and move forward is through our short pre-screening form: https://mitsecurestay.com/apply -- takes about 2 minutes. Happy to answer any questions after.</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\'Hi [Name], thanks for reaching out! The best way to get full details and move forward is through our short pre-screening form: https://mitsecurestay.com/apply -- takes about 2 minutes. Happy to answer any questions after.\')">Copy</button></div></div></div>';
-      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Roomies / Craigslist inquiry</div><div class="bcast-type">Someone asks for more info via platform message</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Platform-neutral -- works for any inbound message.</div><div class="bcast-text">Hi [Name], thanks for your interest! To get full details and check availability, please fill out our quick form: https://mitsecurestay.com/apply -- it only takes 2 minutes and helps us match you to the right room. Looking forward to connecting.</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\'Hi [Name], thanks for your interest! To get full details and check availability, please fill out our quick form: https://mitsecurestay.com/apply -- it only takes 2 minutes and helps us match you to the right room. Looking forward to connecting.\')">Copy</button></div></div></div>';
+      html += '<div style="margin-bottom:16px" data-search-section><div class="sec-head">Prospect Redirect</div><div class="broadcast-grid">';
+      prospectRedirect.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] before sending.</div><div class="bcast-text" id="pr'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, prospectRedirect['+i+'].text)">Copy</button></div></div></div>'; });
+      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">Comment reply</div><div class="bcast-type">Someone comments on a group post asking if available</div></div></div><div class="bcast-copy-wrap"><div class="help-note">No property details needed -- point them to the form, with browse as a fallback.</div><div class="bcast-text">Hi [Name]! Yes, still available. You can get full details and apply here: https://mitsecurestay.com/apply -- takes about 2 minutes. You can also see all our current openings at https://mitsecurestay.com. Feel free to DM if you have questions.</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\'Hi [Name]! Yes, still available. You can get full details and apply here: https://mitsecurestay.com/apply -- takes about 2 minutes. You can also see all our current openings at https://mitsecurestay.com. Feel free to DM if you have questions.\')">Copy</button></div></div></div>';
+      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">DM reply</div><div class="bcast-type">Someone DMs asking for more info or details</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Keep it short -- one link, one next step.</div><div class="bcast-text">Hi [Name], thanks for reaching out! The best way to get full details and move forward is through our short pre-screening form: https://mitsecurestay.com/apply -- takes about 2 minutes. Happy to answer any questions after.</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\'Hi [Name], thanks for reaching out! The best way to get full details and move forward is through our short pre-screening form: https://mitsecurestay.com/apply -- takes about 2 minutes. Happy to answer any questions after.\')">Copy</button></div></div></div>';
+      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Roomies / Craigslist inquiry</div><div class="bcast-type">Someone asks for more info via platform message</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Platform-neutral -- works for any inbound message.</div><div class="bcast-text">Hi [Name], thanks for your interest! To get full details and check availability, please fill out our quick form: https://mitsecurestay.com/apply -- it only takes 2 minutes and helps us match you to the right room. Looking forward to connecting.</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\'Hi [Name], thanks for your interest! To get full details and check availability, please fill out our quick form: https://mitsecurestay.com/apply -- it only takes 2 minutes and helps us match you to the right room. Looking forward to connecting.\')">Copy</button></div></div></div>';
       
       // Furnished Finder cold outreach -- static opener, one question only
       var ffText = 'Hi [Name],\n\nGreg from MIT Secure Stay -- saw your Furnished Finder inquiry for the DC/Maryland area.\n\nAre you looking for a room to rent in a shared home, or a private living space?\n\nBest,\nGreg';
       window.__ffColdText = ffText;
       
-      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Furnished Finder Outbound</div><div class="bcast-type">Sent when alerted of a traveler inquiry -- qualifies space type first</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">One question only. Their answer tells you which inventory to pitch.</div><div class="bcast-text" id="ffcold">'+escHtml(ffText)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffColdText)">Copy</button></div></div></div>';
+      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">Furnished Finder Outbound</div><div class="bcast-type">Sent when alerted of a traveler inquiry -- qualifies space type first</div></div></div><div class="bcast-copy-wrap"><div class="help-note">One question only. Their answer tells you which inventory to pitch.</div><div class="bcast-text" id="ffcold">'+escHtml(ffText)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffColdText)">Copy</button></div></div></div>';
             
       // RouteCheck script -- only renders if this unit has a RouteCheck URL
       if(u.routeCheckUrl){
         var rcText = 'Hi [Name], here is our commute calculator for this property -- it shows typical transit and driving times to nearby universities, hospitals, and federal hubs:\n\n'+u.routeCheckUrl+'\n\nTake a look and let me know if it works for you.';
         window.__rcText = rcText;
-        html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">RouteCheck -- commute calculator</div><div class="bcast-type">Send when prospect asks how far the property is from a specific location</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Property-specific. Replace [Name] before sending.</div><div class="bcast-text" id="rctext">'+escHtml(rcText)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__rcText)">Copy</button></div></div></div>';
+        html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">RouteCheck -- commute calculator</div><div class="bcast-type">Send when prospect asks how far the property is from a specific location</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Property-specific. Replace [Name] before sending.</div><div class="bcast-text" id="rctext">'+escHtml(rcText)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__rcText)">Copy</button></div></div></div>';
       }
       html += '</div></div>';
       // Follow-Up
@@ -591,16 +703,16 @@ function renderMain(){
         {name:'Form not completed', note:'Send if prospect expressed interest but never filled out the form', text:'Hey [Name], it\'s Greg from MIT Secure Stay. I wanted to follow up -- the pre-screening form is the first step to getting you set up. It only takes 2 minutes: https://mitsecurestay.com/apply. Let me know if you have any questions.'},
         {name:'Call not scheduled', note:'Send after form is completed but no call booked', text:'Hey [Name], it\'s Greg. I received your pre-screening form -- thank you! The next step is a quick call to go over the details. You can grab a time here: https://calendly.com/mitsecurestay. Looking forward to connecting.'}
       ];
-      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Follow-Up</div><div class="broadcast-grid">';
-      followUps.forEach(function(s,i){ html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="fu'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, followUps['+i+'].text)">Copy</button></div></div></div>'; });
+      html += '<div style="margin-bottom:16px" data-search-section><div class="sec-head">Follow-Up</div><div class="broadcast-grid">';
+      followUps.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="followup"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="fu'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, followUps['+i+'].text)">Copy</button></div></div></div>'; });
       html += '</div></div>';
       // Scheduling
       var scheduling = [
         {name:'Tour confirmation', note:'Send immediately after a tour is scheduled', text:'Hi [Name], your tour is confirmed! Looking forward to showing you the place. If anything comes up, feel free to reach out or reschedule here: https://calendly.com/mitsecurestay. See you soon.'},
         {name:'Tour reminder', note:'Send the evening before the scheduled tour', text:'Hey [Name], just a quick reminder about your tour tomorrow. Looking forward to it. If anything changes, let me know or reschedule here: https://calendly.com/mitsecurestay.'}
       ];
-      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Scheduling</div><div class="broadcast-grid">';
-      scheduling.forEach(function(s,i){ html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="sc'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, scheduling['+i+'].text)">Copy</button></div></div></div>'; });
+      html += '<div style="margin-bottom:16px" data-search-section><div class="sec-head">Scheduling</div><div class="broadcast-grid">';
+      scheduling.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="followup"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="sc'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, scheduling['+i+'].text)">Copy</button></div></div></div>'; });
       html += '</div></div>';
       // Pipeline
       var pipeline = [
@@ -608,16 +720,16 @@ function renderMain(){
         {name:'Moved forward with another applicant', note:'Send when another applicant is selected for the unit', text:'Hi [Name], thank you for your interest in MIT Secure Stay. Unfortunately I moved forward with another applicant for this unit. I will keep your information on file and reach out if something else becomes available that may be a good fit. I appreciate your time.'},
         {name:'Move-in confirmation', note:'Send 2-3 days before move-in date', text:"Hi [Name], just confirming your move-in for [Date]. Please make sure your security deposit and first month\'s rent are settled before arrival. Looking forward to having you. Reach out if you need anything before then."}
       ];
-      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Pipeline</div><div class="broadcast-grid">';
-      pipeline.forEach(function(s,i){ html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="pl'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, pipeline['+i+'].text)">Copy</button></div></div></div>'; });
+      html += '<div style="margin-bottom:16px" data-search-section><div class="sec-head">Pipeline</div><div class="broadcast-grid">';
+      pipeline.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="pipeline"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="pl'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, pipeline['+i+'].text)">Copy</button></div></div></div>'; });
       html += '</div></div>';
       // Post-Placement
       var postPlacement = [
         {name:'Furnished Finder review request', note:'Send 2-4 weeks before move-out or after a positive signal', text:"Hi [Name], it\'s been a pleasure having you. As your stay wraps up, if you\'ve had a good experience I\'d really appreciate a review on Furnished Finder. It helps other travelers find quality housing and means a lot. Thank you."},
         {name:'Facebook review request', note:'Send 2-4 weeks before move-out or after a positive signal', text:"Hi [Name], it\'s been great having you. If you\'ve had a good experience, I\'d be grateful for a quick review on my Facebook page: facebook.com/mitsecurestay/reviews/?id=100083623381514&sk=reviews -- takes 30 seconds and helps a lot. Thank you!"}
       ];
-      html += '<div style="margin-bottom:28px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--hint);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Post-Placement</div><div class="broadcast-grid">';
-      postPlacement.forEach(function(s,i){ html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div style="font-size:11px;color:var(--hint);margin-bottom:8px">Replace [Name] before sending.</div><div class="bcast-text" id="pp'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, postPlacement['+i+'].text)">Copy</button></div></div></div>'; });
+      html += '<div style="margin-bottom:16px" data-search-section><div class="sec-head">Post-Placement</div><div class="broadcast-grid">';
+      postPlacement.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="review"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] before sending.</div><div class="bcast-text" id="pp'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, postPlacement['+i+'].text)">Copy</button></div></div></div>'; });
       html += '</div></div>';
       html += '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:4px;font-size:12px;color:var(--hint);line-height:1.9"><span style="color:var(--muted);font-weight:500">How to use:</span> Copy any script and paste into Google Voice or your messaging app. Replace [Name], [City], and [Date] with the correct details. No other editing needed.</div>';
       return html;
@@ -630,7 +742,7 @@ function renderMain(){
       return '<div class="bcast-card">'
         +'<div class="bcast-header"><div><div class="bcast-name">Roomies.com Outbound</div><div class="bcast-type">Direct message to active profiles</div></div>'+charBadge(len,300)+'</div>'
         +'<div class="bcast-copy-wrap">'
-        +'<div style="font-size:11px;color:var(--hint);margin-bottom:8px;line-height:1.6">Replace <strong style=\"color:var(--muted)\">[Name]</strong> with their first name before sending.</div>'
+        +'<div class="help-note">Replace <strong style=\"color:var(--muted)\">[Name]</strong> with their first name before sending.</div>'
         +'<div class="bcast-text" id="btext-roomies">'+escHtml(text)+'</div>'
         +'<div class="bcast-footer"><span></span>'
         +'<button class="copy-btn" onclick="copyText(this,\''+escHtml(text).replace(/'/g,"\\'")+'\')">Copy</button>'
