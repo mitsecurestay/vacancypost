@@ -659,6 +659,69 @@ function renderMain(){
     +'<div class="tab-panel" id="panel-scripts">'
     +(function(){
       var html = '';
+      // ── QUICK REPLIES -- highest-frequency inbound answers ──
+      // Property-specific replies pull from the selected unit (always accurate, never a second copy).
+      // Universal replies derive from FAQ.md (source of truth).
+      var isNowQ = u.avail.toLowerCase()==='now';
+      var availWord = isNowQ ? 'available now' : 'opening up soon';
+      var parkingAns = u.parking
+        ? 'Yes -- '+u.name.split(' -- ')[0]+' includes parking.'
+        : 'This one has street parking on a residential block (no permit needed), but no dedicated off-street spot. Happy to point you to the details.';
+      var houseAns = (u.bath==='private')
+        ? 'This is a private living space -- your own entrance, bathroom, and kitchenette. The homeowners live in the upper levels; you have a fully separate, self-contained area.'
+        : 'It\'s a 3-bedroom home -- you\'d have your own private bedroom with 2 other housemates. Everyone is a screened working professional, and it\'s a quiet, co-ed household.';
+      var bathAns = (u.bath==='private')
+        ? 'Private -- this space has its own bathroom, just for you.'
+        : 'Shared -- you get a private bedroom and share the bathroom with 2 other housemates in the home.';
+      var coedAns = (u.bath==='private')
+        ? 'This is a private, self-contained space, so it\'s just you -- no shared household.'
+        : 'Yes, it\'s a co-ed household of screened working professionals. Everyone keeps to themselves and respects shared spaces.';
+
+      var quickReplies = [
+        // ---- PROPERTY-SPECIFIC (reflect the selected unit) ----
+        {g:'prop', q:'What do you have available?', a:'Hi [Name], thanks for reaching out! You can see everything we currently have at https://mitsecurestay.com. Right now I have a furnished room '+availWord+' in '+u.city+' at '+u.rent+'/mo, everything included. Want me to send the details?'},
+        {g:'prop', q:'Is the bathroom private or shared?', a:'Hi [Name], '+bathAns+' Let me know if you\'d like to see photos.'},
+        {g:'prop', q:'Who lives there? / How many people?', a:'Hi [Name], '+houseAns},
+        {g:'prop', q:'Is it co-ed?', a:'Hi [Name], '+coedAns},
+        {g:'prop', q:'Is parking available?', a:'Hi [Name], '+parkingAns},
+        {g:'prop', q:'How much is it? / Is the price right?', a:'Hi [Name], this room is '+u.rent+'/mo and that covers everything -- utilities, wifi, and laundry included. One flat payment, no extra bills.'},
+        // ---- UNIVERSAL (derive from FAQ.md; safe to send as-is) ----
+        {g:'uni', q:'Are utilities included?', a:'Hi [Name], yes -- utilities, high-speed wifi, and in-unit laundry are all included in the monthly rent. One flat payment covers everything, no separate bills to set up.'},
+        {g:'uni', q:'Is it furnished?', a:'Hi [Name], yes -- the room is fully furnished and move-in ready. Just bring your bags.'},
+        {g:'uni', q:'How do I apply?', a:'Hi [Name], it\'s quick: fill out our short pre-screening form at https://mitsecurestay.com/apply (about 2 minutes). From there we\'ll set up a quick call and a walkthrough, then the application. Happy to answer anything along the way.'},
+        {g:'uni', q:'What are your requirements?', a:'Hi [Name], we look at credit, income (generally around 3x the monthly rent), and rental history. If you don\'t have US credit -- no problem -- we accept proof of income, recent pay stubs, or a guarantor. Travel professionals and international applicants are welcome.'},
+        {g:'uni', q:'Do you accept students / travel nurses?', a:'Hi [Name], absolutely -- travel nurses, healthcare professionals, students, and relocating professionals are exactly who we host. We accept pay stubs, proof of income, or a guarantor if you don\'t have US credit history.'},
+        {g:'uni', q:'When can I see the place? / Tour?', a:'Hi [Name], I\'d be glad to set up a walkthrough -- in person or virtual. First step is our quick pre-screening form (https://mitsecurestay.com/apply), then we\'ll grab a time that works: https://calendly.com/mitsecurestay.'},
+        {g:'uni', q:'Can I call you? / Phone number?', a:'Hi [Name], happy to connect. The fastest way to get started is our short form at https://mitsecurestay.com/apply -- once that\'s in, we\'ll schedule a call to go over everything. You can also reach me anytime at mitsecurestay@gmail.com.'},
+        {g:'uni', q:'Do you allow pets?', a:'Hi [Name], our pet policy is property-specific, and we don\'t have any pet-friendly units available at the moment. Let me know what you\'re looking for and I\'ll keep you posted if that changes.'},
+        {g:'uni', q:'Do you offer short-term?', a:'Hi [Name], lease terms are flexible on a case-by-case basis, and shorter stays are possible on select properties -- especially for travel and contract assignments. Tell me your dates and I\'ll let you know what fits.'},
+        {g:'uni', q:'How much upfront? / Deposit?', a:'Hi [Name], it\'s one month\'s rent as the security deposit, plus your first month (or a prorated amount) before move-in. No broker fees.'},
+        {g:'uni', q:'How do I pay rent?', a:'Hi [Name], rent is handled through RentRedi, our secure online portal. We can also take Zelle, bank transfer, or credit card.'},
+        {g:'uni', q:'Can you hold the room for me?', a:'Hi [Name], rooms fill quickly, but once you\'ve completed the pre-screening form and application we can often hold a space while you finish your documents. The form is the first step: https://mitsecurestay.com/apply.'},
+        {g:'uni', q:'What documents do I need?', a:'Hi [Name], to apply you\'ll want proof of income (recent pay stubs or an offer letter) and a photo ID. If you don\'t have US credit, a guarantor or proof of income covers it. That\'s really it to get started.'},
+      ];
+
+      function qrCard(item){
+        var esc = escHtml(item.a);
+        var attr = item.a.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
+        return '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">'+item.q+'</div></div></div>'
+          +'<div class="bcast-copy-wrap"><div class="bcast-text">'+esc+'</div>'
+          +'<div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\''+attr+'\')">Copy</button></div></div></div>';
+      }
+
+      var propCards = quickReplies.filter(function(r){return r.g==='prop';}).map(qrCard).join('');
+      var uniCards  = quickReplies.filter(function(r){return r.g==='uni';}).map(qrCard).join('');
+
+      html += '<div style="margin-bottom:16px" data-search-section><div class="sec-head">Quick Replies <span class="sec-count">-- send-ready answers to the questions you get most</span></div>';
+      html += '<div style="font-size:10px;color:var(--hint);margin-bottom:10px;opacity:0.85;">These reflect the selected unit ('+u.name+'). Switch units above to update the property-specific answers.</div>';
+      html += '<div class="broadcast-grid">'+propCards+'</div>';
+      html += '<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--hint);margin:14px 0 8px;">Universal -- same for every unit</div>';
+      html += '<div class="broadcast-grid">'+uniCards+'</div>';
+      html += '</div>';
+      return html;
+    })()
+    +(function(){
+      var html = '';
       // Lead Response
       var textMsg = 'Hi [Name], this is Greg from MIT Secure Stay. I received your housing request and this could be a good fit for what you\'re looking for in '+u.city+'. To get the process started, please fill out our short pre-screening form: https://mitsecurestay.com/apply -- takes about 2 minutes. Feel free to reply here with any questions.';
       var emailBody = 'Hi [Name],\n\nThank you for your housing request. This could be a good fit for what we have available in '+u.city+'.\n\nTo get the process started, please fill out our short pre-screening form -- it takes about 2 minutes:\nhttps://mitsecurestay.com/apply\n\nOnce I receive your form I will follow up within 24 hours. Feel free to reply here or text me directly with any questions.\n\nBest,\nGreg\nMIT Secure Stay\nmitsecurestay@gmail.com';
