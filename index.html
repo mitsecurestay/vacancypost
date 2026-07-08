@@ -23,7 +23,30 @@ html{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14
 .topbar-logo span{color:var(--accent);font-style:italic;}
 .menu-btn{background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:12px;padding:6px 12px;cursor:pointer;}
 /* ── LAYOUT ── */
-.app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh;}
+.app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh;transition:grid-template-columns 0.2s;}
+.app.sidebar-narrow{grid-template-columns:184px 1fr;}
+.app.sidebar-collapsed{grid-template-columns:0 1fr;}
+.app.sidebar-collapsed .sidebar{transform:translateX(-100%);border-right:none;}
+/* narrow state -- name + availability dot only */
+.app.sidebar-narrow .logo-sub{display:none;}
+.app.sidebar-narrow .sidebar-label span.lbl-text{display:none;}
+.app.sidebar-narrow .unit-meta{display:none;}
+.app.sidebar-narrow .unit-btn{padding:8px 9px;}
+.app.sidebar-narrow .unit-name{font-size:11px;}
+.app.sidebar-narrow .sidebar-header{padding:18px 14px 14px;}
+.app.sidebar-narrow .sidebar-section{padding:14px 12px 8px;}
+.app.sidebar-narrow .add-btn{font-size:0;padding:9px;}
+.app.sidebar-narrow .add-btn::before{content:"+";font-size:15px;}
+/* state-aware collapse controls */
+.sidebar-collapse-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--hint);font-family:var(--mono);font-size:13px;line-height:1;padding:4px 8px;cursor:pointer;transition:all 0.12s;flex-shrink:0;}
+.sidebar-collapse-btn:hover{border-color:var(--accent);color:var(--accent);}
+.sidebar-ctrls{display:flex;gap:4px;}
+.to-full{display:none;}
+.app.sidebar-narrow .to-narrow{display:none;}
+.app.sidebar-narrow .to-full{display:inline-block;}
+.reopen-tab{display:none;position:fixed;top:16px;left:0;z-index:45;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 8px 8px 0;color:var(--muted);font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.06em;padding:9px 12px;cursor:pointer;box-shadow:2px 2px 8px rgba(0,0,0,0.12);transition:all 0.12s;align-items:center;gap:7px;}
+.reopen-tab:hover{color:var(--accent);padding-left:16px;}
+.app.sidebar-collapsed .reopen-tab{display:flex;}
 /* ── SIDEBAR ── */
 .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;transition:transform 0.2s;}
 .sidebar-header{padding:22px 20px 18px;border-bottom:1px solid var(--border);}
@@ -107,6 +130,9 @@ mark.search-hit{color:inherit;}
 .char-ok{border:1px solid rgba(143,188,143,0.4);color:var(--accent2);}
 .char-warn{border:1px solid rgba(212,117,106,0.4);color:var(--danger);}
 .copy-btn{font-family:var(--mono);font-size:12px;font-weight:500;padding:8px 20px;border-radius:20px;cursor:pointer;background:var(--accent);color:#0e0e0e;border:none;transition:opacity 0.12s;}
+.copy-btn.copied{background:transparent;color:var(--accent2);border:1px solid rgba(200,168,74,0.5);}
+.bcast-card.card-copied .bcast-text{opacity:0.72;}
+.copied-flag{font-family:var(--mono);font-size:10px;letter-spacing:0.03em;color:var(--accent2);opacity:0.8;}
 .copy-btn:hover{opacity:0.85;}
 .copy-btn:active{opacity:0.7;}
 /* ── PLATFORM LISTINGS ── */
@@ -156,8 +182,15 @@ mark.search-hit{color:inherit;}
 @media(max-width:680px){
   .topbar{display:flex;}
   .app{grid-template-columns:1fr;}
+  .app.sidebar-collapsed{grid-template-columns:1fr;}
+  .app.sidebar-narrow{grid-template-columns:1fr;}
   .sidebar{position:fixed;top:52px;left:0;height:calc(100vh - 52px);width:260px;z-index:40;transform:translateX(-100%);}
   .sidebar.open{transform:translateX(0);}
+  .app.sidebar-collapsed .sidebar{transform:translateX(-100%);}
+  .app.sidebar-narrow .sidebar{width:260px;}
+  .app.sidebar-narrow .unit-meta,.app.sidebar-narrow .logo-sub{display:block;}
+  .reopen-tab,.app.sidebar-collapsed .reopen-tab{display:none;}
+  .sidebar-collapse-btn{display:none;}
   .main{padding:16px;padding-top:20px;}
   .unit-title{font-size:20px;}
   .broadcast-grid{grid-template-columns:1fr;}
@@ -184,13 +217,21 @@ mark.search-hit{color:inherit;}
       <div class="logo-sub">Tenant Acquisition & Communication</div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-label">Active Vacancies</div>
+      <div class="sidebar-label" style="display:flex;align-items:center;justify-content:space-between;">
+        <span class="lbl-text">Active Vacancies</span>
+        <span class="sidebar-ctrls">
+          <button class="sidebar-collapse-btn to-narrow" onclick="narrowSidebar()" title="Narrow panel">&#10094;</button>
+          <button class="sidebar-collapse-btn to-full" onclick="expandSidebar()" title="Expand panel">&#10095;</button>
+          <button class="sidebar-collapse-btn to-hidden" onclick="collapseSidebar()" title="Hide panel">&#171;</button>
+        </span>
+      </div>
       <div id="unitList"></div>
     </div>
     <div class="sidebar-footer">
       <button class="add-btn" onclick="openModal()">+ Add vacancy</button>
     </div>
   </aside>
+  <button class="reopen-tab" onclick="expandSidebar()" title="Show vacancies panel">&#10095; Vacancies</button>
   <main class="main" id="mainContent">
     <div class="placeholder">
       <div style="font-size:28px;opacity:0.2;margin-bottom:8px">&#9636;</div>
@@ -448,9 +489,24 @@ function charBadge(len, limit){
 async function copyText(btn, text){
   try{
     await navigator.clipboard.writeText(text);
-    var orig = btn.textContent;
-    btn.textContent='Copied!';
-    setTimeout(function(){btn.textContent=orig;},1800);
+    var card = btn.closest('.bcast-card');
+    var isQuickReply = card && card.hasAttribute('data-qr');
+    if(card && !isQuickReply){
+      // Posting/response card -- sticky "done" state for this session (resets on unit switch via re-render)
+      card.classList.add('card-copied');
+      btn.textContent='\u2713 Copied';
+      btn.classList.add('copied');
+      var footer = btn.closest('.bcast-footer');
+      if(footer && !footer.querySelector('.copied-flag')){
+        var flag = footer.querySelector('span');
+        if(flag){ flag.className='copied-flag'; flag.textContent='\u2713 copied this session'; }
+      }
+    } else {
+      // Quick Reply -- brief flash only, reverts (sent repeatedly, so no sticky "done")
+      var orig = btn.textContent;
+      btn.textContent='Copied!';
+      setTimeout(function(){btn.textContent=orig;},1500);
+    }
   }catch(e){}
 }
 function renderSidebar(){
@@ -704,7 +760,7 @@ function renderMain(){
       function qrCard(item){
         var esc = escHtml(item.a);
         var attr = item.a.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
-        return '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">'+item.q+'</div></div></div>'
+        return '<div class="bcast-card" data-cat="respond" data-qr="1"><div class="bcast-header"><div><div class="bcast-name">'+item.q+'</div></div></div>'
           +'<div class="bcast-copy-wrap"><div class="bcast-text">'+esc+'</div>'
           +'<div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\''+attr+'\')">Copy</button></div></div></div>';
       }
@@ -831,6 +887,21 @@ function toggleSidebar(){
 }
 function closeSidebar(){
   document.getElementById('sidebar').classList.remove('open');
+}
+function narrowSidebar(){
+  var app=document.querySelector('.app');
+  app.classList.remove('sidebar-collapsed');
+  app.classList.add('sidebar-narrow');
+}
+function collapseSidebar(){
+  var app=document.querySelector('.app');
+  app.classList.remove('sidebar-narrow');
+  app.classList.add('sidebar-collapsed');
+}
+function expandSidebar(){
+  var app=document.querySelector('.app');
+  app.classList.remove('sidebar-collapsed');
+  app.classList.remove('sidebar-narrow');
 }
 function openModal(){document.getElementById('modalOverlay').classList.add('open');}
 function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
