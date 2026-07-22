@@ -387,9 +387,10 @@ var PLATFORMS = [
 // edited by hand, infrequently -- treated as configuration, not external data.
 var UNITS = [
   {id:'dcn_b', photoUrl:'https://drive.google.com/drive/folders/1JzH4PbAllJoBNwCHxmNOLfxl7L0VimN6?usp=drive_link', name:'Jay St NE -- Room B',          tier:'hard_trust',  city:'NE Washington, DC 20019', rent:'$925', avail:'Now',       availDot:'now',   bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:false, transit:'Bus stop 2-3 min walk. Three Metro stations nearby: Benning Road (Blue/Silver, ~0.8mi), Deanwood (Orange, ~1mi), Capitol Heights (Blue/Silver, ~1.2mi). Easy access to downtown DC and Capitol Hill.', highlight:'Street parking, no ticketing or towing.', routeCheckUrl:'https://mitsecurestay.com/routecheck/jay-st.html'},
-  {id:'dcn_c', photoUrl:'https://drive.google.com/drive/folders/1JzH4PbAllJoBNwCHxmNOLfxl7L0VimN6?usp=drive_link', name:'Jay St NE -- Room C',          tier:'hard_trust',  city:'NE Washington, DC 20019', rent:'$925', avail:'Soon',     availDot:'soon',  bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:false, transit:'Bus stop 2-3 min walk. Three Metro stations nearby: Benning Road (Blue/Silver, ~0.8mi), Deanwood (Orange, ~1mi), Capitol Heights (Blue/Silver, ~1.2mi). Easy access to downtown DC and Capitol Hill.', highlight:'Street parking, no ticketing or towing.', routeCheckUrl:'https://mitsecurestay.com/routecheck/jay-st.html'},
-  {id:'ss_a', photoUrl:'https://drive.google.com/drive/folders/1k7vzEq1Lsmmp3LAmI4CCALU8Rd2MUK0z?usp=drive_link',  name:'Hammersmith -- Room',     tier:'standard',    city:'Silver Spring, MD',        rent:'$925', avail:'Soon', availDot:'soon',  bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'3 min walk to Ride On 26 bus -- connects to NIH campuses (Twinbrook, Fishers Lane, Fernwood, Rockledge, Democracy, Executive Plaza) and Glenmont, Twinbrook, White Flint Metro. 3 miles to Glenmont Metro. ICC, I-495, I-270, Georgia Ave nearby. Close to Universities at Shady Grove campus.', highlight:'1 dedicated parking space. 20 min drive to Holy Cross Hospital, NIH, NOAA, NIST Gaithersburg, AstraZeneca, US Nuclear Regulatory Commission, US Pharmacopeia, Westat, US Dept of Energy Germantown. Two pools, clubhouse, tennis courts, soccer fields, walking trails. Steps to CVS, Starbucks, Aldi, LA Fitness.', routeCheckUrl:'https://mitsecurestay.com/routecheck/silverspring.html'},
-  {id:'riv_a', photoUrl:'https://drive.google.com/drive/folders/1Vpsuqv-4OLi9NxQYAzjmJIQ3gYB4F2ui?usp=sharing', name:'59th Ave -- Basement',tier:'hard_local',  city:'Riverdale, MD 20737',      rent:'$800', avail:'Soon',     availDot:'soon',  bath:'shared2',  furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'College Park-UMD Metro (Green Line, ~2mi). Shuttle-UM route nearby. Easy DC commute via Green Line direct to downtown. Close to shopping, restaurants, and parks.', highlight:'Off-street parking. Basement unit in 3BR home.', routeCheckUrl:'https://mitsecurestay.com/routecheck/riverdale.html'},
+  {id:'dcn_c', photoUrl:'https://drive.google.com/drive/folders/1JzH4PbAllJoBNwCHxmNOLfxl7L0VimN6?usp=drive_link', name:'Jay St NE -- Room C',          tier:'hard_trust',  city:'NE Washington, DC 20019', rent:'$925', avail:'Now',     availDot:'now',  bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:false, transit:'Bus stop 2-3 min walk. Three Metro stations nearby: Benning Road (Blue/Silver, ~0.8mi), Deanwood (Orange, ~1mi), Capitol Heights (Blue/Silver, ~1.2mi). Easy access to downtown DC and Capitol Hill.', highlight:'Street parking, no ticketing or towing.', routeCheckUrl:'https://mitsecurestay.com/routecheck/jay-st.html'},
+  // Hammersmith removed from active inventory 2026-07-21, per operator request.
+  {id:'riv_a', photoUrl:'https://drive.google.com/drive/folders/1Vpsuqv-4OLi9NxQYAzjmJIQ3gYB4F2ui?usp=sharing', name:'59th Ave -- Lower Level (Room H)',tier:'hard_local',  city:'Riverdale, MD 20737',      rent:'$800', avail:'Now',     availDot:'now',  bath:'shared2',  furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'College Park-UMD Metro (Green Line, ~2mi). Shuttle-UM route nearby. Easy DC commute via Green Line direct to downtown. Close to shopping, restaurants, and parks.', highlight:'Off-street parking, private lot in back -- no ticketing, no towing. Lower Level unit in 3BR home with its own independent kitchen and entrance.', routeCheckUrl:'https://mitsecurestay.com/routecheck/riverdale.html'},
+  {id:'riv_b', photoUrl:'https://drive.google.com/drive/folders/1Vpsuqv-4OLi9NxQYAzjmJIQ3gYB4F2ui?usp=sharing', name:'59th Ave -- Lower Level (Room F)',tier:'hard_local',  city:'Riverdale, MD 20737',      rent:'$900', avail:'Now',     availDot:'now',  bath:'shared2',  furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'College Park-UMD Metro (Green Line, ~2mi). Shuttle-UM route nearby. Easy DC commute via Green Line direct to downtown. Close to shopping, restaurants, and parks.', highlight:'Off-street parking, private lot in back -- no ticketing, no towing. Lower Level unit in 3BR home with its own independent kitchen and entrance.', routeCheckUrl:'https://mitsecurestay.com/routecheck/riverdale.html'},
   // Knox Circle removed from active inventory 2026-07-21 -- per knox.md, all units occupied, not marketed (~5 months), DO NOT generate listings or active-vacancy copy. Restore only when marketing resumes and the property file is promoted out of stub status.
 ];
 // ============================================================================
@@ -463,6 +464,19 @@ function generateRoomies(u){
   }
   return 'Hi [Name], saw you\'re looking for housing -- I have a furnished room available '+availStr+' in '+u.city+' at '+u.rent+'/mo, everything included (utilities, wifi, laundry). '+bathLine(u.bath)+' '+transitShort+'. Screened housemates. Happy to send details if you\'re still searching.';
 }
+// Lists every currently active (non-leased) unit with its rent, then funnels to
+// mitsecurestay.com. Reads the full UNITS list directly rather than a single selected
+// unit -- this is the one generator that isn't scoped to whichever vacancy is selected
+// in the sidebar. Self-updating: add/remove/lease a unit in UNITS and this reflects it
+// automatically, so it never goes stale the way a hand-written "what's available" post does.
+function generateAllVacanciesSummary(){
+  var active = UNITS.filter(function(u){ return !u.leased; });
+  if(active.length===0) return 'No active vacancies right now -- check back soon: '+CONFIG.browseUrl;
+  var lines = active.map(function(u){
+    return '\u2022 '+u.name+' -- '+u.rent+'/mo'+(u.avail.toLowerCase()==='now' ? ' (available now)' : ' (available soon)');
+  }).join('\n');
+  return '🏠 Now available in DC & Maryland:\n\n'+lines+'\n\nAll-inclusive (utilities, wifi, laundry), fully furnished, screened housemates.\n\nSee full details and apply: '+CONFIG.browseUrl+'\n\nReach out if any catch your eye!';
+}
 function generateBroadcast(u, destId){
   var isNow = u.avail.toLowerCase()==='now';
   var availStr = isNow ? 'available now' : 'available soon';
@@ -479,12 +493,12 @@ function generateBroadcast(u, destId){
     return 'Howard grad students and post-grads -- furnished room '+availStr+' in '+u.city+'. '+u.rent+'/mo covers utilities, wifi, and laundry. '+bathLine(u.bath)+' Screened housemates,. https://mitsecurestay.com/apply';
   }
   if(destId==='groupme_browse'){
-    return '🏠 Looking for a furnished room or private living space in DC or Maryland? Take a look at everything we currently have available:\n\nhttps://mitsecurestay.com\n\nAll-inclusive (utilities, wifi, laundry), fully furnished, screened housemates. Reach out if anything catches your eye!';
+    return generateAllVacanciesSummary();
   }
   if(destId==='fb_students'){
     var uniLine = '';
     if(u.id==='dcn_b'||u.id==='dcn_c') uniLine = 'Great for Howard, GW, and AU students and grad students. Easy Metro access to all three campuses.';
-    else if(u.id==='riv_a') uniLine = 'Close to UMD College Park, Howard University, and Bowie State. Easy DC commute.';
+    else if(u.city==='Riverdale, MD 20737') uniLine = 'Close to UMD College Park, Howard University, and Bowie State. Easy DC commute.';
     else if(u.id==='ss_a') uniLine = 'Convenient to Universities at Shady Grove. Close to NIH and research campuses along I-270.';
     else if(u.id==='dcs_pls_02') uniLine = 'Great for Howard, GW, AU, and Georgetown grad students. Direct Metro access to all four campuses via Blue/Orange/Silver lines.';
     else uniLine = 'Easy access to DC-area universities and campuses.';
@@ -561,7 +575,7 @@ function generateListing(u, destId){
       transitFull = 'Transit: Bus stop 2-3 min walk. Three Metro stations nearby -- Benning Road (Blue/Silver, ~0.8mi), Deanwood (Orange, ~1mi), Capitol Heights (Blue/Silver, ~1.2mi). Easy access to downtown DC and Capitol Hill.';
     } else if(u.id==='ss_a'){
       transitFull = 'Transit: 3 min walk to Ride On 26 bus -- connects to Glenmont, Twinbrook, and White Flint Metro (Red Line) and NIH campuses. ICC, I-495, I-270, and Georgia Ave nearby.';
-    } else if(u.id==='riv_a'){
+    } else if(u.city==='Riverdale, MD 20737'){
       transitFull = 'Transit: College Park-UMD Metro (Green Line) ~2mi -- direct to downtown DC. Shuttle-UM route nearby. Easy access to I-495 and US-1.';
     } else if(u.id==='dcs_pls_02'){
       transitFull = 'Transit: Three Metro stations within ~2mi -- Naylor Road (Green), Potomac Ave (Blue/Orange/Silver), Stadium-Armory (Blue/Orange/Silver). Direct access to Capitol Hill, Navy Yard, and downtown DC. Minutes from Cedar Hill Regional Medical Center.';
@@ -987,8 +1001,9 @@ function renderMain(){
         +'<div class="bcast-footer"><span></span>'
         +'<button class="copy-btn" onclick="copyText(this,\''+escHtml(text).replace(/'/g,"\\'")+'\')">Copy</button>'
         +'</div></div></div>';
-      if(u.id==='riv_a'){
-        var umdText = 'Hi [Name], saw you\'re looking for housing near UMD -- I have a furnished room available soon in Riverdale, MD at '+u.rent+'/mo, all-inclusive (utilities, wifi, laundry). It\'s actually one of the closest properties to campus we have -- College Park is just 1-2 Metro stops away on the Green Line, so it\'s an easy commute even without a car. '+bathLine(u.bath)+' Screened housemates. Happy to send more details if you\'re still searching!';
+      if(u.city==='Riverdale, MD 20737'){
+        var umdIsNow = u.avail.toLowerCase()==='now';
+        var umdText = 'Hi [Name], saw you\'re looking for housing near UMD -- I have a furnished room available '+(umdIsNow?'now':'soon')+' in Riverdale, MD at '+u.rent+'/mo, all-inclusive (utilities, wifi, laundry). It\'s actually one of the closest properties to campus we have -- College Park is just 1-2 Metro stops away on the Green Line, so it\'s an easy commute even without a car. '+bathLine(u.bath)+' Screened housemates. Happy to send more details if you\'re still searching!';
         var umdLen = umdText.length;
         window.__umdRoomiesText = umdText;
         out += '<div class="bcast-card" data-cat="respond" style="margin-top:10px">'
