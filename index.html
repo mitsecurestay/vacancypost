@@ -279,9 +279,98 @@ mark.search-hit{color:inherit;}
   </div>
 </div>
 <script>
+// ============================================================================
+// ARCHITECTURE NOTE -- read before refactoring this file
+// ============================================================================
+// VacancyPost is a publishing/content-generation tool, not a property management
+// system. Source of truth is split by design:
+//   Airtable      -> operational data (leads, applicants, tenants, live availability)
+//   Google Drive   -> knowledge (policies, playbooks, brand voice)
+//   VacancyPost    -> publishing tool only (this file)
+//
+// Because of that split, this file intentionally does NOT sync, call an API, or
+// depend on a network connection. CONFIG / TIER / UNITS / AppState and every
+// generator/render/utility function below are static and self-contained on purpose:
+// no network dependency, no API keys, no Airtable outages, opens instantly,
+// easy to archive as a dated version, easy to hand to someone else.
+//
+// Do not replace the static UNITS array with a live feed (Airtable or otherwise)
+// until one of these is actually true -- not anticipated, actually true:
+//   - 30+ active vacancies
+//   - multiple people editing inventory
+//   - availability changing daily
+//   - a real need to publish from a phone
+//   - inventory already being maintained in Airtable as the natural source
+// Until then, editing one object in UNITS when a room leases or a price changes
+// is not a maintenance burden -- it's the right amount of tooling for the job.
+// Revisit this note before adding sync logic, not after.
+// ============================================================================
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+const CONFIG = {
+  applyUrl: 'https://mitsecurestay.com/apply',
+  browseUrl: 'https://mitsecurestay.com',
+  calendlyUrl: 'https://calendly.com/mitsecurestay',
+  marketplaceProfile: 'facebook.com/marketplace/profile/52201881',
+  email: 'mitsecurestay@gmail.com',
+  routeCheckHub: 'https://mitsecurestay.com/routecheck/'
+  // Note: most listing/broadcast copy below still has these values inline rather than
+  // reading from CONFIG -- retrofitting ~40 scattered literals inside escaped template
+  // strings was judged higher-risk (silent typos) than benefit at this file's size.
+  // New scripts/templates should pull from CONFIG going forward.
+};
+
+// Tier strategy: the one place hard_trust / hard_local / standard positioning lives.
+// Consolidates what were previously repeated if/else if/else blocks in filterLine(),
+// trustBlock(), the generateListing() hook, and renderMain()'s badge styling.
+// generateRoomies() and generateBroadcast() keep their own per-tier branches --
+// that copy differs meaningfully by channel, not just a 3-way repeat of the same lines.
+const TIER = {
+  hard_trust: {
+    label: 'Hard -- trust',
+    badgeColor: 'var(--danger)',
+    badgeBorder: 'rgba(212,117,106,0.5)',
+    trust: 'Current housemates are working professionals -- quiet, co-ed household. The street is residential and well-kept.',
+    filters: 'Credit score 650+ preferred. Income generally 3x monthly rent. Overall profile considered -- travel professionals and international applicants welcome.',
+    hook: function(u, isNow){
+      return isNow
+        ? 'Looking for affordable, move-in ready housing in DC with easy transit access? This room is available now -- fully furnished, all-inclusive, and minutes from the bus.'
+        : 'Lining up DC housing? This fully furnished room has easy bus and Metro access -- everything included in one flat monthly rate.';
+    }
+  },
+  hard_local: {
+    label: 'Hard -- local',
+    badgeColor: 'var(--accent)',
+    badgeBorder: 'rgba(200,185,122,0.5)',
+    trust: 'Clean, well-maintained home with professional housemates.',
+    filters: 'Credit score 650+ preferred. Income generally 3x monthly rent. Overall profile considered -- travel professionals and international applicants welcome.',
+    hook: function(u, isNow){
+      return isNow
+        ? 'Affordable furnished room available now in '+u.city+'. All-inclusive at '+u.rent+'/mo -- one payment covers everything.'
+        : 'Furnished room opening soon in '+u.city+'. All-inclusive at '+u.rent+'/mo -- utilities, wifi, and laundry covered.';
+    }
+  },
+  standard: {
+    label: 'Standard',
+    badgeColor: 'var(--accent2)',
+    badgeBorder: 'rgba(143,188,143,0.4)',
+    trust: 'Screened professional housemates. Well-maintained home.',
+    filters: 'Credit score 650+ preferred. Income 3x monthly rent. No prior evictions.',
+    hook: function(u, isNow){
+      return isNow
+        ? 'Need move-in ready housing in '+u.city+'? This furnished room is available now -- everything included at '+u.rent+'/mo.'
+        : 'Planning your move to '+u.city+'? This furnished room is available and ready -- all-inclusive at '+u.rent+'/mo.';
+    }
+  }
+};
+
 var BROADCASTS = [
   {id:'groupme_general', name:'General DMV Housing',         type:'GroupMe',        limit:300},
   {id:'groupme_howard',  name:'Howard GroupMe',              type:'GroupMe',        limit:300},
+  {id:'groupme_browse',  name:'GroupMe -- Browse Listings',  type:'GroupMe',        limit:300},
   {id:'fb_students',     name:'Student Housing Groups',      type:'Facebook Group', limit:500},
   {id:'fb_general',      name:'General Housing Groups',      type:'Facebook Group', limit:500},
   {id:'cg_routecheck',   name:'RouteCheck Traffic Driver',   type:'Cross-Group',    limit:500},
@@ -294,16 +383,30 @@ var PLATFORMS = [
   {id:'craigslist',     name:'Craigslist',            fmt:'Scroll-stopping', limit:null, cue:'#9b7bb5', glyph:'&#128196;'},
   {id:'facebook_mktpl', name:'Facebook Marketplace',  fmt:'Scroll-stopping', limit:500, cue:'#5b7fb5', glyph:'&#128717;'},
 ];
-var units = [
+// Static inventory / property knowledge base. Only 3-5 active vacancies at a time,
+// edited by hand, infrequently -- treated as configuration, not external data.
+var UNITS = [
   {id:'dcn_b', photoUrl:'https://drive.google.com/drive/folders/1JzH4PbAllJoBNwCHxmNOLfxl7L0VimN6?usp=drive_link', name:'Jay St NE -- Room B',          tier:'hard_trust',  city:'NE Washington, DC 20019', rent:'$925', avail:'Now',       availDot:'now',   bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:false, transit:'Bus stop 2-3 min walk. Three Metro stations nearby: Benning Road (Blue/Silver, ~0.8mi), Deanwood (Orange, ~1mi), Capitol Heights (Blue/Silver, ~1.2mi). Easy access to downtown DC and Capitol Hill.', highlight:'Street parking, no ticketing or towing.', routeCheckUrl:'https://mitsecurestay.com/routecheck/jay-st.html'},
   {id:'dcn_c', photoUrl:'https://drive.google.com/drive/folders/1JzH4PbAllJoBNwCHxmNOLfxl7L0VimN6?usp=drive_link', name:'Jay St NE -- Room C',          tier:'hard_trust',  city:'NE Washington, DC 20019', rent:'$925', avail:'Soon',     availDot:'soon',  bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:false, transit:'Bus stop 2-3 min walk. Three Metro stations nearby: Benning Road (Blue/Silver, ~0.8mi), Deanwood (Orange, ~1mi), Capitol Heights (Blue/Silver, ~1.2mi). Easy access to downtown DC and Capitol Hill.', highlight:'Street parking, no ticketing or towing.', routeCheckUrl:'https://mitsecurestay.com/routecheck/jay-st.html'},
   {id:'ss_a', photoUrl:'https://drive.google.com/drive/folders/1k7vzEq1Lsmmp3LAmI4CCALU8Rd2MUK0z?usp=drive_link',  name:'Hammersmith -- Room',     tier:'standard',    city:'Silver Spring, MD',        rent:'$925', avail:'Soon', availDot:'soon',  bath:'shared2', furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'3 min walk to Ride On 26 bus -- connects to NIH campuses (Twinbrook, Fishers Lane, Fernwood, Rockledge, Democracy, Executive Plaza) and Glenmont, Twinbrook, White Flint Metro. 3 miles to Glenmont Metro. ICC, I-495, I-270, Georgia Ave nearby. Close to Universities at Shady Grove campus.', highlight:'1 dedicated parking space. 20 min drive to Holy Cross Hospital, NIH, NOAA, NIST Gaithersburg, AstraZeneca, US Nuclear Regulatory Commission, US Pharmacopeia, Westat, US Dept of Energy Germantown. Two pools, clubhouse, tennis courts, soccer fields, walking trails. Steps to CVS, Starbucks, Aldi, LA Fitness.', routeCheckUrl:'https://mitsecurestay.com/routecheck/silverspring.html'},
   {id:'riv_a', photoUrl:'https://drive.google.com/drive/folders/1Vpsuqv-4OLi9NxQYAzjmJIQ3gYB4F2ui?usp=sharing', name:'59th Ave -- Basement',tier:'hard_local',  city:'Riverdale, MD 20737',      rent:'$800', avail:'Soon',     availDot:'soon',  bath:'shared2',  furnished:true, utilities:true, wifi:true, laundry:true, parking:true,  transit:'College Park-UMD Metro (Green Line, ~2mi). Shuttle-UM route nearby. Easy DC commute via Green Line direct to downtown. Close to shopping, restaurants, and parks.', highlight:'Off-street parking. Basement unit in 3BR home.', routeCheckUrl:'https://mitsecurestay.com/routecheck/riverdale.html'},
-  {id:'dcs_pls_02', photoUrl:'https://drive.google.com/drive/folders/1tqt-T09f6RKUohF7qYT_9_5Es4Wje_21?usp=drive_link', name:'Knox Circle -- Basement Suite', tier:'hard_trust',  city:'SE Washington, DC 20020', rent:'$1,650', avail:'Soon', availDot:'soon', bath:'private', furnished:true, utilities:true, wifi:true, laundry:true, parking:true, transit:'Three Metro stations within ~2mi: Naylor Road (Green, ~2mi), Potomac Ave (Blue/Orange/Silver, ~1.5mi), Stadium-Armory (Blue/Orange/Silver, ~2mi). Direct access to Capitol Hill, Navy Yard, and downtown DC.', highlight:'Private entrance and bathroom. Full kitchenette (refrigerator, stovetop, microwave, toaster oven, coffee maker). 65 inch Roku Smart TV. Free off-street parking. Minutes from Cedar Hill Regional Medical Center, Skyland Town Center, Nationals Park, and Navy Yard. Quiet single-family home, homeowners occupy upper levels.', routeCheckUrl:'https://mitsecurestay.com/routecheck/knox-cir.html'},
+  // Knox Circle removed from active inventory 2026-07-21 -- per knox.md, all units occupied, not marketed (~5 months), DO NOT generate listings or active-vacancy copy. Restore only when marketing resumes and the property file is promoted out of stub status.
 ];
-var selectedUnit = null;
-var selectedPlatform = null;
-var activeTab = 'broadcast';
+// ============================================================================
+// APPLICATION STATE
+// ============================================================================
+
+// Centralized application state -- was three separate globals (selectedUnit, selectedPlatform, activeTab).
+var AppState = {
+  selectedUnit: null,
+  selectedPlatform: null,
+  activeTab: 'broadcast'
+};
+// ============================================================================
+// BUSINESS RULES
+// ============================================================================
+// Property-fact helpers and tier-driven copy decisions. Reused across every generator below.
+
 function dcArea(u){ return u.id.indexOf('dcs')===0 ? 'SE DC' : 'NE DC'; }
 function shortTransit(u){
   if(u.id==='dcn_b'||u.id==='dcn_c') return 'Bus stop 2-3 min away, Metro accessible';
@@ -334,15 +437,18 @@ function bathLine(b){
   return 'Private bedroom and private bath.';
 }
 function filterLine(u){
-  return u.tier==='hard_trust'||u.tier==='hard_local'
-    ? 'Credit score 650+ preferred. Income generally 3x monthly rent. Overall profile considered -- travel professionals and international applicants welcome.'
-    : 'Credit score 650+ preferred. Income 3x monthly rent. No prior evictions.';
+  return TIER[u.tier].filters;
 }
 function trustBlock(u){
-  if(u.tier==='hard_trust') return 'Current housemates are working professionals -- quiet, co-ed household. The street is residential and well-kept.';
-  if(u.tier==='hard_local') return 'Clean, well-maintained home with professional housemates.';
-  return 'Screened professional housemates. Well-maintained home.';
+  return TIER[u.tier].trust;
 }
+// ============================================================================
+// GENERATORS
+// ============================================================================
+// Platform/channel-specific copywriting. Each reads UNITS facts + TIER strategy
+// and returns ready-to-copy text. Roomies and Broadcast keep their own per-tier
+// branches (channel-specific wording); Listing pulls its hook from TIER directly.
+
 function generateRoomies(u){
   var isNow = u.avail.toLowerCase()==='now';
   var availStr = isNow ? 'now' : 'soon';
@@ -371,6 +477,9 @@ function generateBroadcast(u, destId){
     if(u.tier==='hard_local') return 'Howard grad students and post-grads -- furnished room '+availStr+' in '+u.city+' at '+u.rent+'/mo. Utilities, wifi, and laundry included. '+bathLine(u.bath)+' Easy ride to Howard. Screened housemates. https://mitsecurestay.com/apply';
     if(u.tier==='hard_trust') return 'Howard students -- furnished room '+availStr+' in '+dcArea(u)+' at '+u.rent+'/mo, all-inclusive. '+bathLine(u.bath)+' '+shortTransit(u)+'. Screened housemates. https://mitsecurestay.com/apply';
     return 'Howard grad students and post-grads -- furnished room '+availStr+' in '+u.city+'. '+u.rent+'/mo covers utilities, wifi, and laundry. '+bathLine(u.bath)+' Screened housemates,. https://mitsecurestay.com/apply';
+  }
+  if(destId==='groupme_browse'){
+    return '🏠 Looking for a furnished room or private living space in DC or Maryland? Take a look at everything we currently have available:\n\nhttps://mitsecurestay.com\n\nAll-inclusive (utilities, wifi, laundry), fully furnished, screened housemates. Reach out if anything catches your eye!';
   }
   if(destId==='fb_students'){
     var uniLine = '';
@@ -407,20 +516,7 @@ function generateListing(u, destId){
   var availLine = isNow ? 'Available now' : 'Available soon';
   var filters = filterLine(u);
   var trust = trustBlock(u);
-  var hook = '';
-  if(u.tier==='hard_trust'){
-    hook = isNow
-      ? 'Looking for affordable, move-in ready housing in DC with easy transit access? This room is available now -- fully furnished, all-inclusive, and minutes from the bus.'
-      : 'Lining up DC housing? This fully furnished room has easy bus and Metro access -- everything included in one flat monthly rate.';
-  } else if(u.tier==='hard_local'){
-    hook = isNow
-      ? 'Affordable furnished room available now in '+u.city+'. All-inclusive at '+u.rent+'/mo -- one payment covers everything.'
-      : 'Furnished room opening soon in '+u.city+'. All-inclusive at '+u.rent+'/mo -- utilities, wifi, and laundry covered.';
-  } else {
-    hook = isNow
-      ? 'Need move-in ready housing in '+u.city+'? This furnished room is available now -- everything included at '+u.rent+'/mo.'
-      : 'Planning your move to '+u.city+'? This furnished room is available and ready -- all-inclusive at '+u.rent+'/mo.';
-  }
+  var hook = TIER[u.tier].hook(u, isNow);
   // PROFESSIONAL (Zillow, Apartments.com, Roomies)
   if(destId==='zillow'||destId==='apartments'||destId==='roomies'){
     return availLine+' -- Furnished Room in '+u.city+' | '+u.rent+'/mo, All Utilities Included'
@@ -480,6 +576,10 @@ function generateListing(u, destId){
   }
   return '';
 }
+// ============================================================================
+// UTILITIES
+// ============================================================================
+
 function escHtml(t){return t.replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>');}
 function charBadge(len, limit){
   if(!limit) return '<span class="char-badge char-ok">'+len+' chars</span>';
@@ -509,11 +609,17 @@ async function copyText(btn, text){
     }
   }catch(e){}
 }
+// ============================================================================
+// RENDERERS
+// ============================================================================
+// DOM output. Each of these owns one piece of the screen (sidebar, main panel,
+// search filtering). No business logic lives here -- they call the generators above.
+
 function renderSidebar(){
   var list = document.getElementById('unitList');
   list.innerHTML='';
-  var active = units.filter(function(u){return !u.leased;});
-  var leased = units.filter(function(u){return u.leased;});
+  var active = UNITS.filter(function(u){return !u.leased;});
+  var leased = UNITS.filter(function(u){return u.leased;});
   if(active.length===0){
     var empty=document.createElement('div');
     empty.style.cssText='font-size:12px;color:var(--hint);padding:4px 0';
@@ -522,7 +628,7 @@ function renderSidebar(){
   }
   active.forEach(function(u){
     var btn=document.createElement('button');
-    btn.className='unit-btn'+(selectedUnit&&selectedUnit.id===u.id?' active':'');
+    btn.className='unit-btn'+(AppState.selectedUnit&&AppState.selectedUnit.id===u.id?' active':'');
     btn.innerHTML='<span class="unit-name"><span class="avail-dot dot-'+u.availDot+'"></span>'+u.name+'</span><span class="unit-meta">'+u.city+' &middot; '+u.rent+'/mo &middot; '+(u.avail==='Now'?'Now':'Soon')+'</span>';
     btn.onclick=function(){selectUnit(u);closeSidebar();};
     list.appendChild(btn);
@@ -534,7 +640,7 @@ function renderSidebar(){
     list.appendChild(lbl);
     leased.forEach(function(u){
       var btn=document.createElement('button');
-      btn.className='unit-btn'+(selectedUnit&&selectedUnit.id===u.id?' active':'');
+      btn.className='unit-btn'+(AppState.selectedUnit&&AppState.selectedUnit.id===u.id?' active':'');
       btn.style.opacity='0.45';
       btn.innerHTML='<span class="unit-name"><span class="avail-dot" style="background:var(--hint)"></span>'+u.name+'</span><span class="unit-meta">'+u.city+' &middot; Leased</span>';
       btn.onclick=function(){selectUnit(u);closeSidebar();};
@@ -543,14 +649,14 @@ function renderSidebar(){
   }
 }
 function selectUnit(u){
-  selectedUnit=u;
-  selectedPlatform=null;
+  AppState.selectedUnit=u;
+  AppState.selectedPlatform=null;
   renderSidebar();
   renderMain();
-  setTab(activeTab);
+  setTab(AppState.activeTab);
 }
 function setTab(tabId){
-  activeTab = tabId;
+  AppState.activeTab = tabId;
   document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===tabId);});
   document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id==='panel-'+tabId);});
 }
@@ -596,7 +702,7 @@ function filterTemplates(raw){
       p.style.display='';
       p.querySelectorAll('[data-search-section]').forEach(function(s){s.classList.remove('section-hidden');});
     });
-    setTab(activeTab);
+    setTab(AppState.activeTab);
     return;
   }
   __searchActive=true;
@@ -630,16 +736,16 @@ function clearTemplateSearch(){
 }
 function renderMain(){
   var main=document.getElementById('mainContent');
-  if(!selectedUnit){
+  if(!AppState.selectedUnit){
     main.innerHTML='<div class="placeholder"><div style="font-size:28px;opacity:0.2;margin-bottom:12px">&#9636;</div><div style="font-size:14px;color:var(--muted);margin-bottom:6px">Select a vacancy to get started</div><div style="font-size:12px;color:var(--hint);text-align:center;max-width:220px;line-height:1.7">Tap <strong style="color:var(--muted)">Vacancies</strong> at the top right, then pick a unit from the list.</div></div>';
     return;
   }
-  var u=selectedUnit;
+  var u=AppState.selectedUnit;
   var incs=inclusions(u);
   var availClass=u.availDot==='now'?'badge-avail':u.availDot==='soon'?'badge-soon':'';
-  var tierColor=u.tier==='hard_trust'?'var(--danger)':u.tier==='hard_local'?'var(--accent)':'var(--accent2)';
-  var tierBorder=u.tier==='hard_trust'?'rgba(212,117,106,0.5)':u.tier==='hard_local'?'rgba(200,185,122,0.5)':'rgba(143,188,143,0.4)';
-  var tierLabel=u.tier==='hard_trust'?'Hard -- trust':u.tier==='hard_local'?'Hard -- local':'Standard';
+  var tierColor=TIER[u.tier].badgeColor;
+  var tierBorder=TIER[u.tier].badgeBorder;
+  var tierLabel=TIER[u.tier].label;
   var leasedBanner=u.leased?'<div class="leased-banner"><span>Marked as leased -- hidden from active listings.</span><button class="restore-btn" onclick="restoreUnit(\''+u.id+'\')">Restore</button></div>':'';
   // Broadcast cards HTML
   var bcastCards = BROADCASTS.map(function(d){
@@ -659,22 +765,22 @@ function renderMain(){
   }).join('');
   // Platform dest cards HTML
   var destCards = PLATFORMS.map(function(d){
-    return '<div class="dest-card'+(selectedPlatform===d.id?' active':'')+'" onclick="selectPlatform(\''+d.id+'\')" style="border-left:3px solid '+d.cue+';">'
+    return '<div class="dest-card'+(AppState.selectedPlatform===d.id?' active':'')+'" onclick="selectPlatform(\''+d.id+'\')" style="border-left:3px solid '+d.cue+';">'
       +'<div class="dest-name"><span class="dest-glyph">'+d.glyph+'</span>'+d.name+'</div>'
       +'<div class="dest-fmt">'+d.fmt+'</div>'
       +'</div>';
   }).join('');
   // Listing copy HTML
   var listingCopy='<div style="color:var(--hint);font-size:13px;padding:16px 0">Select a platform above to generate listing copy.</div>';
-  if(selectedPlatform){
-    var ltext=generateListing(u,selectedPlatform);
-    var ldest=PLATFORMS.find(function(d){return d.id===selectedPlatform;});
+  if(AppState.selectedPlatform){
+    var ltext=generateListing(u,AppState.selectedPlatform);
+    var ldest=PLATFORMS.find(function(d){return d.id===AppState.selectedPlatform;});
     var llen=ltext.length;
     listingCopy='<div class="listing-copy-wrap">'
       +'<div class="listing-header"><span class="copy-label">Generated listing</span><div style="display:flex;gap:8px;align-items:center">'+charBadge(llen,ldest.limit)+'<button class="copy-btn" onclick="copyText(this,\''+escHtml(ltext).replace(/'/g,"\\'")+'\')">Copy</button></div></div>'
       +'<div class="listing-box">'+escHtml(ltext)+'</div>'
       +(ldest.limit?'<div class="copy-note">Limit: '+ldest.limit.toLocaleString()+' chars</div>':'')
-      +(selectedPlatform==='facebook_mktpl'?'<div style="background:rgba(200,185,122,0.08);border:1px solid rgba(200,185,122,0.25);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:12px;color:var(--muted);line-height:1.9"><span style="color:var(--accent);font-weight:500">Weekly repost checklist (every 7 days):</span><br>1. Update availability date to current<br>2. Drop price by $5 (raise it back next week)<br>3. Reorder or swap one photo<br>4. Delete old listing and repost as new -- do not just edit<br><span style="color:var(--hint)">If no inquiry after 3+ weeks: full relist with new photos and rewritten first line.</span></div>':'')
+      +(AppState.selectedPlatform==='facebook_mktpl'?'<div style="background:rgba(200,185,122,0.08);border:1px solid rgba(200,185,122,0.25);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:12px;color:var(--muted);line-height:1.9"><span style="color:var(--accent);font-weight:500">Weekly repost checklist (every 7 days):</span><br>1. Update availability date to current<br>2. Drop price by $5 (raise it back next week)<br>3. Reorder or swap one photo<br>4. Delete old listing and repost as new -- do not just edit<br><span style="color:var(--hint)">If no inquiry after 3+ weeks: full relist with new photos and rewritten first line.</span></div>':'')
       +'</div>';
   }
   main.innerHTML=leasedBanner
@@ -806,6 +912,21 @@ function renderMain(){
       window.__ffColdText = ffText;
       
       html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">Furnished Finder Outbound</div><div class="bcast-type">Sent when alerted of a traveler inquiry -- qualifies space type first</div></div></div><div class="bcast-copy-wrap"><div class="help-note">One question only. Their answer tells you which inventory to pitch.</div><div class="bcast-text" id="ffcold">'+escHtml(ffText)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffColdText)">Copy</button></div></div></div>';
+
+      // Furnished Finder -- ready to move forward (FF now disallows external links in-thread; no mitsecurestay.com/apply link here)
+      var ffReadyAskNumber = 'That\'s great to hear! What\'s the best number to text you at? I\'ll send over the next steps right away.';
+      var ffReadyNumberOnFile = 'Great news -- I\'ll text you the next steps now, keep an eye on your phone!';
+      window.__ffReadyAskNumber = ffReadyAskNumber;
+      window.__ffReadyNumberOnFile = ffReadyNumberOnFile;
+      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">FF Ready -- Ask for Number</div><div class="bcast-type">In-FF-thread reply when they signal readiness -- no number on file yet</div></div></div><div class="bcast-copy-wrap"><div class="help-note">No link -- Furnished Finder does not allow external links in-thread. Next steps go out by text.</div><div class="bcast-text" id="ffready1">'+escHtml(ffReadyAskNumber)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffReadyAskNumber)">Copy</button></div></div></div>';
+      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">FF Ready -- Number on File</div><div class="bcast-type">In-FF-thread reply when they signal readiness -- phone number already provided</div></div></div><div class="bcast-copy-wrap"><div class="help-note">No link -- send the funnel link separately by text (see FF Next Steps below).</div><div class="bcast-text" id="ffready2">'+escHtml(ffReadyNumberOnFile)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffReadyNumberOnFile)">Copy</button></div></div></div>';
+
+      var ffNextStepsText = 'Hi [Name], this is Greg from MIT Secure Stay -- following up on your Furnished Finder request. Here are the next steps:\n\n1. Fill out our quick tenant questionnaire: https://mitsecurestay.com/apply -- share your preferences and availability.\n\n2. Once you have completed the questionnaire you will be directed to schedule a call. We will discuss any questions and arrange a walkthrough.\n\nFeel free to reply here with any questions.\n\nBest,\nGreg';
+      var ffNextStepsEmail = 'Hi [Name],\n\nThanks for your interest -- following up on your Furnished Finder request. Here are the next steps:\n\n1. Fill out our quick tenant questionnaire: https://mitsecurestay.com/apply -- share your preferences and availability.\n\n2. Once you have completed the questionnaire you will be directed to schedule a call. We will discuss any questions and arrange a walkthrough.\n\nFeel free to reply here with any questions.\n\nBest,\nGreg\nMIT Secure Stay\nmitsecurestay@gmail.com';
+      window.__ffNextStepsText = ffNextStepsText;
+      window.__ffNextStepsEmail = ffNextStepsEmail;
+      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">FF Next Steps (Text)</div><div class="bcast-type">Send by SMS once you have their number -- mentions Furnished Finder by name as a trust signal</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Sent off-FF-platform, so the link is fine here.</div><div class="bcast-text" id="ffnext-text">'+escHtml(ffNextStepsText)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffNextStepsText)">Copy</button></div></div></div>';
+      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">FF Next Steps (Email fallback)</div><div class="bcast-type">Use only if no phone number is available at all</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Fallback only -- don\'t send both text and email same day if a number is available.</div><div class="bcast-text" id="ffnext-email">'+escHtml(ffNextStepsEmail)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffNextStepsEmail)">Copy</button></div></div></div>';
             
       // RouteCheck script -- only renders if this unit has a RouteCheck URL
       if(u.routeCheckUrl){
@@ -858,17 +979,31 @@ function renderMain(){
     +(function(){
       var text = generateRoomies(u);
       var len = text.length;
-      return '<div class="bcast-card">'
+      var out = '<div class="bcast-card">'
         +'<div class="bcast-header"><div><div class="bcast-name">Roomies.com Outbound</div><div class="bcast-type">Direct message to active profiles</div></div>'+charBadge(len,300)+'</div>'
         +'<div class="bcast-copy-wrap">'
         +'<div class="help-note">Replace <strong style=\"color:var(--muted)\">[Name]</strong> with their first name before sending.</div>'
         +'<div class="bcast-text" id="btext-roomies">'+escHtml(text)+'</div>'
         +'<div class="bcast-footer"><span></span>'
         +'<button class="copy-btn" onclick="copyText(this,\''+escHtml(text).replace(/'/g,"\\'")+'\')">Copy</button>'
-        +'</div></div></div>'
-        +'<div style="font-size:12px;color:var(--hint);margin-top:16px;line-height:1.8;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px">'
+        +'</div></div></div>';
+      if(u.id==='riv_a'){
+        var umdText = 'Hi [Name], saw you\'re looking for housing near UMD -- I have a furnished room available soon in Riverdale, MD at '+u.rent+'/mo, all-inclusive (utilities, wifi, laundry). It\'s actually one of the closest properties to campus we have -- College Park is just 1-2 Metro stops away on the Green Line, so it\'s an easy commute even without a car. '+bathLine(u.bath)+' Screened housemates. Happy to send more details if you\'re still searching!';
+        var umdLen = umdText.length;
+        window.__umdRoomiesText = umdText;
+        out += '<div class="bcast-card" data-cat="respond" style="margin-top:10px">'
+          +'<div class="bcast-header"><div><div class="bcast-name">Roomies.com Outbound -- UMD Students</div><div class="bcast-type">59th Ave Riverdale -- leads with campus proximity students may not realize</div></div>'+charBadge(umdLen,300)+'</div>'
+          +'<div class="bcast-copy-wrap">'
+          +'<div class="help-note">Replace <strong style=\"color:var(--muted)\">[Name]</strong> with their first name before sending. Use for profiles that mention UMD, College Park, or student housing.</div>'
+          +'<div class="bcast-text" id="btext-roomies-umd">'+escHtml(umdText)+'</div>'
+          +'<div class="bcast-footer"><span></span>'
+          +'<button class="copy-btn" onclick="copyText(this, window.__umdRoomiesText)">Copy</button>'
+          +'</div></div></div>';
+      }
+      out += '<div style="font-size:12px;color:var(--hint);margin-top:16px;line-height:1.8;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px">'
         +'<span style=\"color:var(--muted);font-weight:500\">How to use:</span> Scan active Roomies profiles, copy this message, replace [Name] with their first name, send. Message anyone showing as active -- var the response filter itself.'
         +'</div>';
+      return out;
     })()
     +'</div>'
   +'<div class="tab-panel" id="panel-listings">'
@@ -878,10 +1013,14 @@ function renderMain(){
     +'</div>';
 }
 function selectPlatform(id){
-  selectedPlatform=id;
+  AppState.selectedPlatform=id;
   renderMain();
   setTab('listings');
 }
+// ============================================================================
+// EVENT HANDLERS / MODAL
+// ============================================================================
+
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('open');
 }
@@ -912,7 +1051,7 @@ function addUnit(){
   var avail=document.getElementById('m_avail').value.trim()||'Now';
   var rent=document.getElementById('m_rent').value.trim();
   var dot=avail.toLowerCase()==='now'?'now':'soon';
-  units.push({
+  UNITS.push({
     id:'u_'+Date.now(), name:name, city:city,
     tier:document.getElementById('m_tier').value,
     rent:rent.startsWith('$')?rent:'$'+rent,
@@ -931,18 +1070,18 @@ function addUnit(){
 }
 // Phase 2: swap these for Airtable PATCH calls
 function markLeased(id){
-  var u=units.find(function(u){return u.id===id;});
+  var u=UNITS.find(function(u){return u.id===id;});
   if(!u) return;
   u.leased=true;
-  if(selectedUnit&&selectedUnit.id===id) renderMain();
+  if(AppState.selectedUnit&&AppState.selectedUnit.id===id) renderMain();
   renderSidebar();
   // Phase 2: airtableUpdateStatus(id,'Occupied');
 }
 function restoreUnit(id){
-  var u=units.find(function(u){return u.id===id;});
+  var u=UNITS.find(function(u){return u.id===id;});
   if(!u) return;
   u.leased=false;
-  if(selectedUnit&&selectedUnit.id===id) renderMain();
+  if(AppState.selectedUnit&&AppState.selectedUnit.id===id) renderMain();
   renderSidebar();
   // Phase 2: airtableUpdateStatus(id,'Vacant');
 }
