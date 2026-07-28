@@ -1038,6 +1038,15 @@ function renderMain(){
       html += '<div style="margin-bottom:16px" data-search-section><div class="sec-head">Post-Placement</div><div class="broadcast-grid">';
       postPlacement.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="review"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] before sending.</div><div class="bcast-text" id="pp'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, postPlacement['+i+'].text)">Copy</button></div></div></div>'; });
       html += '</div></div>';
+      // Lease Renewal -- current tenant, not a prospect. Genuinely new category (no existing
+      // sequence covers tenant retention), so a new script fits the design heuristic rather
+      // than violating it.
+      var leaseRenewal = [
+        {name:'Renewal check-in', note:'Send ~60 days before lease end -- text', text:'Hi [Name], this is Greg with MIT Secure Stay. Your lease at [Property] is set to end on [Date] -- I wanted to check in early and see if you\'re planning to renew. Let me know your thoughts whenever you get a chance, and we can go over next steps together.'}
+      ];
+      html += '<div style="margin-bottom:16px" data-search-section><div class="sec-head">Lease Renewal</div><div class="broadcast-grid">';
+      leaseRenewal.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="pipeline"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name], [Property], and [Date] before sending.</div><div class="bcast-text" id="lr-renew'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, leaseRenewal['+i+'].text)">Copy</button></div></div></div>'; });
+      html += '</div></div>';
       html += '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:4px;font-size:12px;color:var(--hint);line-height:1.9"><span style="color:var(--muted);font-weight:500">How to use:</span> Copy any script and paste into Google Voice or your messaging app. Replace [Name], [City], and [Date] with the correct details. No other editing needed.</div>';
       return html;
     })()
