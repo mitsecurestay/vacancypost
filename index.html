@@ -372,9 +372,6 @@ const TIER = {
 };
 
 var BROADCASTS = [
-  {id:'groupme_general', name:'General DMV Housing',         type:'GroupMe',        limit:300},
-  {id:'groupme_howard',  name:'Howard GroupMe',              type:'GroupMe',        limit:300},
-  {id:'groupme_browse',  name:'GroupMe -- Browse Listings',  type:'GroupMe',        limit:300},
   {id:'fb_students',     name:'Student Housing Groups',      type:'Facebook Group', limit:500},
   {id:'fb_general',      name:'General Housing Groups',      type:'Facebook Group', limit:500},
   {id:'cg_routecheck',   name:'RouteCheck Traffic Driver',   type:'Cross-Group',    limit:500},
@@ -388,7 +385,7 @@ var PLATFORMS = [
   {id:'facebook_mktpl', name:'Facebook Marketplace',  fmt:'Scroll-stopping', limit:500, cue:'#5b7fb5', glyph:'&#128717;'},
 ];
 // Craigslist removed as a manual-post destination 2026-07-23 -- no longer posted to directly;
-// TurboTenant auto-syndicates to Craigslist (and Apartments.com, Realtor.com, etc.) on its own.
+// Craigslist and Apartments.com are reached only through syndication (Zillow and TurboTenant).
 // TurboTenant uses the same listing template as Zillow (see generateListing below), per
 // PLATFORM_RULES.md.
 // Static inventory / property knowledge base. Only 3-5 active vacancies at a time,
@@ -498,32 +495,19 @@ function generateBroadcast(u, destId){
   var availStr = isNow ? 'available now' : 'available soon';
   var incs = inclusions(u);
   var incsShort = incs.slice(0,3).join(', ');
-  if(destId==='groupme_general'){
-    if(u.tier==='hard_trust') return 'Room '+availStr+' in '+dcArea(u)+' -- '+u.rent+'/mo all-inclusive. Furnished, utilities, wifi, laundry all covered. '+shortTransit(u)+'. Good for relocators and locals upgrading their situation. Screened housemates. https://mitsecurestay.com/apply';
-    if(u.tier==='hard_local') return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo flat -- everything included. No extra bills, no setup. Good for locals looking for a clean, all-inclusive situation. Professional housemates, easy DC commute.\n\nhttps://mitsecurestay.com/apply';
-    return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive. Utilities, wifi, and laundry covered. Good fit for relocators and locals alike. Screened housemates.\n\nhttps://mitsecurestay.com/apply';
-  }
-  if(destId==='groupme_howard'){
-    if(u.tier==='hard_local') return 'Howard grad students and post-grads -- furnished room '+availStr+' in '+u.city+' at '+u.rent+'/mo. Utilities, wifi, and laundry included. '+bathLine(u)+' Easy ride to Howard. Screened housemates. https://mitsecurestay.com/apply';
-    if(u.tier==='hard_trust') return 'Howard students -- furnished room '+availStr+' in '+dcArea(u)+' at '+u.rent+'/mo, all-inclusive. '+bathLine(u)+' '+shortTransit(u)+'. Screened housemates. https://mitsecurestay.com/apply';
-    return 'Howard grad students and post-grads -- furnished room '+availStr+' in '+u.city+'. '+u.rent+'/mo covers utilities, wifi, and laundry. '+bathLine(u)+' Screened housemates,. https://mitsecurestay.com/apply';
-  }
-  if(destId==='groupme_browse'){
-    return generateAllVacanciesSummary();
-  }
   if(destId==='fb_students'){
     var uniLine = '';
     if(u.id==='dcn_b'||u.id==='dcn_c') uniLine = 'Great for Howard, GW, and AU students and grad students. Easy Metro access to all three campuses.';
     else if(u.city==='Riverdale, MD 20737') uniLine = 'Close to UMD College Park, Howard University, and Bowie State. Easy DC commute.';
     else uniLine = 'Easy access to DC-area universities and campuses.';
-    if(u.tier==='hard_trust') return '🏠 Furnished room '+availStr+' in '+dcArea(u)+' | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u)+'\n✓ '+shortTransit(u)+'\n✓ Screened professional housemates\n✓\n✓ No broker fees\n\n'+uniLine+'\n\nhttps://mitsecurestay.com/apply\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
-    if(u.tier==='hard_local') return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u)+'\n✓ Utilities, wifi, and laundry included\n✓ Professional housemates, clean home\n✓\n✓ No broker fees\n\n'+uniLine+'\n\nhttps://mitsecurestay.com/apply\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
-    return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ Utilities, wifi, and laundry covered\n✓ '+bathLine(u)+'\n✓ Screened professional housemates\n✓\n✓ No broker fees\n\n'+uniLine+'\n\nhttps://mitsecurestay.com/apply\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
+    if(u.tier==='hard_trust') return '🏠 Furnished room '+availStr+' in '+dcArea(u)+' | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u)+'\n✓ '+shortTransit(u)+'\n✓ Screened professional housemates\n✓\n✓ No broker fees\n\n'+uniLine+'\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
+    if(u.tier==='hard_local') return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u)+'\n✓ Utilities, wifi, and laundry included\n✓ Professional housemates, clean home\n✓\n✓ No broker fees\n\n'+uniLine+'\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
+    return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ Utilities, wifi, and laundry covered\n✓ '+bathLine(u)+'\n✓ Screened professional housemates\n✓\n✓ No broker fees\n\n'+uniLine+'\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
   }
     if(destId==='fb_general'){
-    if(u.tier==='hard_trust') return '🏠 Furnished room '+availStr+' in '+dcArea(u)+' | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u)+'\n✓ '+shortTransit(u)+'\n✓ Quiet co-ed household, screened housemates\n✓ No broker fees\n\nhttps://mitsecurestay.com/apply\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
-    if(u.tier==='hard_local') return 'Furnished room '+availStr+' in '+u.city+' -- '+u.rent+'/mo flat, everything included. '+bathLine(u)+' Whether you\'re moving locally or relocating, this is a straightforward setup: clean home, professional housemates, one payment covers everything.\n\nNo broker fees.\n\nhttps://mitsecurestay.com/apply\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
-    return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ '+incsShort+'\n✓ '+bathLine(u)+'\n✓ '+trustBlock(u)+'\n✓ No broker fees\n\nhttps://mitsecurestay.com/apply\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
+    if(u.tier==='hard_trust') return '🏠 Furnished room '+availStr+' in '+dcArea(u)+' | '+u.rent+'/mo all-inclusive\n\n✓ '+bathLine(u)+'\n✓ '+shortTransit(u)+'\n✓ Quiet co-ed household, screened housemates\n✓ No broker fees\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
+    if(u.tier==='hard_local') return 'Furnished room '+availStr+' in '+u.city+' -- '+u.rent+'/mo flat, everything included. '+bathLine(u)+' Whether you\'re moving locally or relocating, this is a straightforward setup: clean home, professional housemates, one payment covers everything.\n\nNo broker fees.\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
+    return '🏠 Furnished room '+availStr+' in '+u.city+' | '+u.rent+'/mo all-inclusive\n\n✓ '+incsShort+'\n✓ '+bathLine(u)+'\n✓ '+trustBlock(u)+'\n✓ No broker fees\n\nSee our other listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881';
   }
 
   if(destId==='cg_routecheck'){
@@ -545,8 +529,8 @@ function generateListing(u, destId){
   var filters = filterLine(u);
   var trust = trustBlock(u);
   var hook = TIER[u.tier].hook(u, isNow);
-  // PROFESSIONAL (Zillow, Apartments.com, Roomies)
-  if(destId==='zillow'||destId==='apartments'||destId==='roomies'||destId==='turbotenant'){
+  // PROFESSIONAL (Zillow, TurboTenant, Roomies)
+  if(destId==='zillow'||destId==='roomies'||destId==='turbotenant'){
     return availLine+' -- Furnished Room in '+u.city+' | '+u.rent+'/mo, All Utilities Included'
       +'\n\n'+hook
       +'\n\n'+bathLine(u)+'\n\nWhat\'s included: '+incsStr+'.'
@@ -571,7 +555,6 @@ function generateListing(u, destId){
       +'\n\nLease: '+filters+' Security deposit: '+u.rent+'. Online lease signing.'
       +(u.routeCheckUrl?'\n\nCheck if our location works for your commute: '+u.routeCheckUrl:'')+'\n\nApply: https://mitsecurestay.com/apply';
   }
-  // CRAIGSLIST
   // FACEBOOK MARKETPLACE
   if(destId==='facebook_mktpl'){
     var bulletIncs = incs.map(function(i){return '\u2713 '+i.charAt(0).toUpperCase()+i.slice(1);}).join('\n');
@@ -849,11 +832,7 @@ function renderMain(){
     }
   } else {
     headerHtml='<div class="leased-banner" style="margin-bottom:16px;"><span>No vacancy selected -- browsing general scripts below. Select a vacancy for property-specific content (Quick Replies, Lead Response, RouteCheck, Furnished Finder follow-up, Broadcasts, Platform Listings, Roomies Outbound).</span></div>';
-    var allVacText = generateAllVacanciesSummary();
-    bcastCards = '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">GroupMe -- Browse Listings</div><div class="bcast-type">GroupMe</div></div>'+charBadge(allVacText.length,300)+'</div>'
-      +'<div class="bcast-copy-wrap"><div class="bcast-text">'+escHtml(allVacText)+'</div>'
-      +'<div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\''+escHtml(allVacText).replace(/'/g,"\\'")+'\')">Copy</button></div></div></div>'
-      +'<div style="grid-column:1/-1;color:var(--hint);font-size:13px;padding:16px 0">Select a vacancy above for the remaining broadcast templates -- these pull that unit\'s price and details.</div>';
+    bcastCards = '<div style="grid-column:1/-1;color:var(--hint);font-size:13px;padding:16px 0">Select a vacancy above for broadcast templates -- these pull that unit\'s price and details.</div>';
     listingCopy='<div style="color:var(--hint);font-size:13px;padding:16px 0">Select a vacancy above -- listing copy is generated per property.</div>';
   }
   var destCards = PLATFORMS.map(function(d){
@@ -882,7 +861,7 @@ function renderMain(){
     +'</div>'
     +'<div class="tab-panel active" id="panel-broadcast">'
     +'<div class="broadcast-grid">'+bcastCards+'</div>'
-    +'<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:16px;font-size:12px;color:var(--hint);line-height:1.9"><span style="color:var(--muted);font-weight:500">How to use:</span> Copy each message and paste into that group. Post one vacancy across all groups in one sitting. Do not swap GroupMe and Facebook messages -- they are formatted differently.</div>'
+    +'<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:16px;font-size:12px;color:var(--hint);line-height:1.9"><span style="color:var(--muted);font-weight:500">How to use:</span> Copy each message and paste into that group. Post one vacancy across all groups in one sitting.</div>'
     +'</div>'
     +'<div class="tab-panel" id="panel-scripts">'
     +'<div class="jumpnav-wrap">'
@@ -981,11 +960,11 @@ function renderMain(){
       var prospectRedirect = [
         {name:'Move-in date ask', note:'Send immediately when someone responds to a listing', text:'Hey [Name], thanks for reaching out! When are you looking to move in?'},
         {name:'Budget + location', note:'Send after they give you a move-in date', text:'Got it. What\'s your budget and are you flexible on location?'},
-        {name:'View availabilities (off-Facebook)', note:'Send when someone asks how to see your properties -- SMS, GroupMe, email, other platforms', text:'Hi [Name], you can see our current listings at:\nhttps://mitsecurestay.com\n\nLet me know if any catch your eye and I\'ll get you the details.'},
+        {name:'View availabilities (off-Facebook)', note:'Send when someone asks how to see your properties -- SMS, email, other platforms', text:'Hi [Name], you can see our current listings at:\nhttps://mitsecurestay.com\n\nLet me know if any catch your eye and I\'ll get you the details.'},
         {name:'View availabilities (Facebook)', note:'Send when a Facebook prospect asks how to see your properties -- keeps traffic on Facebook', text:'Hi [Name], you can see our current listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881\n\nLet me know if any catch your eye and I\'ll get you the details.'},
         {name:'Next steps', note:'Send after qualifying (move-in date, budget, location)', text:'Hi [Name], thanks for your interest!\n\nHere are the next steps:\n\n1. Fill out our quick tenant questionnaire: https://mitsecurestay.com/apply -- share your preferences and availability.\n\n2. Once you have completed the questionnaire you will be directed to schedule a call. We will discuss any questions and arrange a walkthrough.\n\nBest,\nGreg'},
         {name:'No availability -- network referral', note:'Send when you do not have a matching space for the prospect', text:'Hi [Name], unfortunately I do not have the space you are looking for available right now. I do work with a network of other property operators in the DC/Maryland area -- if you would like, I can share your info with them and connect you if there is a match. Just fill out our quick form so I have the details to share: https://mitsecurestay.com/apply. No pressure either way.'},
-        {name:'Confirmation-gate follow-up', note:'Marketplace/Roomies/GroupMe lead who didn\'t respond to "Yes, are you interested?" -- send once, 48 hours after the confirmation gate, then mark cold if still no reply', text:'Hi [Name], just checking if you\'re still looking for housing in [City/Neighborhood]? Let me know if you have any questions!'},
+        {name:'Confirmation-gate follow-up', note:'Marketplace/Roomies lead who didn\'t respond to "Yes, are you interested?" -- send once, 48 hours after the confirmation gate, then mark cold if still no reply', text:'Hi [Name], just checking if you\'re still looking for housing in [City/Neighborhood]? Let me know if you have any questions!'},
       ];
       html += '<div id="sec-prospectredirect" style="margin-bottom:16px" data-search-section><div class="sec-head">Prospect Redirect</div><div class="broadcast-grid">';
       prospectRedirect.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] before sending.</div><div class="bcast-text" id="pr'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, prospectRedirect['+i+'].text)">Copy</button></div></div></div>'; });
@@ -1235,11 +1214,11 @@ renderSidebar();
       </div>
       <div style="display:flex;gap:12px;align-items:flex-start">
         <div style="background:var(--accent);color:#0e0e0e;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px">2</div>
-        <div style="font-size:13px;color:var(--text);line-height:1.6"><strong style="font-weight:500">Pick a tab:</strong><br><em>Broadcasts</em> -- GroupMe and Facebook group posts<br><em>Message Scripts</em> -- lead response, follow-up, scheduling, pipeline, and review texts<br><em>Roomies Outbound</em> -- direct messages to active Roomies.com profiles<br><em>Platform Listings</em> -- Zillow, Craigslist, Furnished Finder, etc.</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6"><strong style="font-weight:500">Pick a tab:</strong><br><em>Broadcasts</em> -- Facebook group posts<br><em>Message Scripts</em> -- lead response, follow-up, scheduling, pipeline, and review texts<br><em>Roomies Outbound</em> -- direct messages to active Roomies.com profiles<br><em>Platform Listings</em> -- Zillow, TurboTenant, Furnished Finder, etc.</div>
       </div>
       <div style="display:flex;gap:12px;align-items:flex-start">
         <div style="background:var(--accent);color:#0e0e0e;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px">3</div>
-        <div style="font-size:13px;color:var(--text);line-height:1.6"><strong style="font-weight:500">Select a destination</strong> (e.g. General DMV Housing, Zillow) and the copy generates automatically.</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6"><strong style="font-weight:500">Select a destination</strong> (e.g. Student Housing Groups, Zillow) and the copy generates automatically.</div>
       </div>
       <div style="display:flex;gap:12px;align-items:flex-start">
         <div style="background:var(--accent);color:#0e0e0e;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px">4</div>
