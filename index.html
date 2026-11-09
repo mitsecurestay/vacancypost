@@ -86,7 +86,7 @@ html{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14
 .tab{font-family:var(--mono);font-size:12px;font-weight:500;padding:10px 16px;background:transparent;border:none;color:var(--hint);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s;letter-spacing:0.03em;text-transform:uppercase;}
 .tab-verb{color:var(--accent2);font-weight:600;margin-right:5px;opacity:0.75;}
 .tab.active .tab-verb{opacity:1;}
-.tab[data-verb="respond"]:first-of-type,.tab[data-tab="scripts"]{border-left:1px solid var(--border);margin-left:8px;padding-left:20px;}
+.tab[data-tab="roomies"]{border-left:1px solid var(--border);margin-left:8px;padding-left:20px;}
 .tab:hover{color:var(--muted);}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .tab-panel{display:none;}
@@ -553,7 +553,7 @@ function generateListing(u, destId){
       +'\n\n'+trust
       +'\n\nTransit and location:\n'+tMain+empBlock+hlBlock
       +'\n\nLease: '+filters+' Security deposit: '+u.rent+'. Online lease signing.'
-      +(u.routeCheckUrl?'\n\nCheck if our location works for your commute: '+u.routeCheckUrl:'')+'\n\nApply: https://mitsecurestay.com/apply';
+      ;
   }
   // FACEBOOK MARKETPLACE
   if(destId==='facebook_mktpl'){
@@ -831,7 +831,7 @@ function renderMain(){
         +'</div>';
     }
   } else {
-    headerHtml='<div class="leased-banner" style="margin-bottom:16px;"><span>No vacancy selected -- browsing general scripts below. Select a vacancy for property-specific content (Quick Replies, Lead Response, RouteCheck, Furnished Finder follow-up, Broadcasts, Platform Listings, Roomies Outbound).</span></div>';
+    headerHtml='<div class="leased-banner" style="margin-bottom:16px;"><span>No vacancy selected -- Select a vacancy for property-specific content (Broadcasts, Platform Listings, Roomies Outbound).</span></div>';
     bcastCards = '<div style="grid-column:1/-1;color:var(--hint);font-size:13px;padding:16px 0">Select a vacancy above for broadcast templates -- these pull that unit\'s price and details.</div>';
     listingCopy='<div style="color:var(--hint);font-size:13px;padding:16px 0">Select a vacancy above -- listing copy is generated per property.</div>';
   }
@@ -856,229 +856,11 @@ function renderMain(){
     +'<div class="tab-bar">'
     +'<button class="tab active" data-tab="broadcast" data-verb="post" onclick="setTab(\'broadcast\')"><span class="tab-verb">Post</span> Groups</button>'
     +'<button class="tab" data-tab="listings" data-verb="post" onclick="setTab(\'listings\')"><span class="tab-verb">Post</span> Platforms</button>'
-    +'<button class="tab" data-tab="scripts" data-verb="respond" onclick="setTab(\'scripts\')"><span class="tab-verb">Respond</span> Leads</button>'
     +'<button class="tab" data-tab="roomies" data-verb="respond" onclick="setTab(\'roomies\')"><span class="tab-verb">Respond</span> Roomies</button>'
     +'</div>'
     +'<div class="tab-panel active" id="panel-broadcast">'
     +'<div class="broadcast-grid">'+bcastCards+'</div>'
     +'<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:16px;font-size:12px;color:var(--hint);line-height:1.9"><span style="color:var(--muted);font-weight:500">How to use:</span> Copy each message and paste into that group. Post one vacancy across all groups in one sitting.</div>'
-    +'</div>'
-    +'<div class="tab-panel" id="panel-scripts">'
-    +'<div class="jumpnav-wrap">'
-    +'<button class="jumpnav-chip" onclick="jumpToSection(\'sec-quickreplies\')">Quick Replies</button>'
-    +'<button class="jumpnav-chip" onclick="jumpToSection(\'sec-leadresponse\')">Lead Response</button>'
-    +'<button class="jumpnav-chip" onclick="jumpToSection(\'sec-prospectredirect\')">Prospect Redirect</button>'
-    +'<button class="jumpnav-chip" onclick="jumpToSection(\'sec-followup\')">Follow-Up</button>'
-    +'<button class="jumpnav-chip" onclick="jumpToSection(\'sec-scheduling\')">Scheduling</button>'
-    +'<button class="jumpnav-chip" onclick="jumpToSection(\'sec-pipeline\')">Pipeline</button>'
-    +'<button class="jumpnav-chip" onclick="jumpToSection(\'sec-postplacement\')">Post-Placement</button>'
-    +'<button class="jumpnav-chip" onclick="jumpToSection(\'sec-leaserenewal\')">Lease Renewal</button>'
-    +'</div>'
-    +(function(){
-      // ── QUICK REPLIES -- fully unit-dependent (every card reads u.bath/u.city/u.rent/etc) ──
-      if(!u){
-        return '<div id="sec-quickreplies" style="margin-bottom:16px" data-search-section><div class="sec-head">Quick Replies <span class="sec-count">-- send-ready answers to the questions you get most</span></div>'
-          +'<div style="color:var(--hint);font-size:13px;padding:12px 0">Select a vacancy above -- these answers reflect a specific unit\'s bathroom type, rent, and parking.</div></div>';
-      }
-      var html = '';
-      // ── QUICK REPLIES -- highest-frequency inbound answers ──
-      // Property-specific replies pull from the selected unit (always accurate, never a second copy).
-      // Universal replies derive from FAQ.md (source of truth).
-      var isNowQ = u.avail.toLowerCase()==='now';
-      var availWord = isNowQ ? 'available now' : 'opening up soon';
-      var parkingAns = u.parking
-        ? 'Yes -- '+u.name.split(' -- ')[0]+' includes parking.'
-        : 'This one has street parking on a residential block (no permit needed), but no dedicated off-street spot. Happy to point you to the details.';
-      var houseAns = (u.bath==='private')
-        ? 'This is a private living space -- your own entrance, bathroom, and kitchenette. The homeowners live in the upper levels; you have a fully separate, self-contained area.'
-        : 'It\'s a 3-bedroom home -- you\'d have your own private bedroom with 2 other housemates. Everyone is a screened working professional, and it\'s a quiet, co-ed household.';
-      var bathAns = (u.bath==='private')
-        ? 'Private -- this space has its own bathroom, just for you.'
-        : 'Shared -- you get a private bedroom and share the bathroom with 2 other housemates in the home.';
-      var coedAns = (u.bath==='private')
-        ? 'This is a private, self-contained space, so it\'s just you -- no shared household.'
-        : 'Yes, it\'s a co-ed household of screened working professionals. Everyone keeps to themselves and respects shared spaces.';
-
-      var quickReplies = [
-        // ---- PROPERTY-SPECIFIC (reflect the selected unit) ----
-        {g:'prop', q:'What do you have available?', a:'Hi [Name], thanks for reaching out! You can see everything we currently have at https://mitsecurestay.com. Right now I have a furnished room '+availWord+' in '+u.city+' at '+u.rent+'/mo, everything included. Want me to send the details?'},
-        {g:'prop', q:'Is the bathroom private or shared?', a:'Hi [Name], '+bathAns+' Let me know if you\'d like to see photos.'},
-        {g:'prop', q:'Who lives there? / How many people?', a:'Hi [Name], '+houseAns},
-        {g:'prop', q:'Is it co-ed?', a:'Hi [Name], '+coedAns},
-        {g:'prop', q:'Is parking available?', a:'Hi [Name], '+parkingAns},
-        {g:'prop', q:'How much is it? / Is the price right?', a:'Hi [Name], this room is '+u.rent+'/mo and that covers everything -- utilities, wifi, and laundry included. One flat payment, no extra bills.'},
-        // ---- UNIVERSAL (derive from FAQ.md; safe to send as-is) ----
-        {g:'uni', q:'Are utilities included?', a:'Hi [Name], yes -- utilities, high-speed wifi, and in-unit laundry are all included in the monthly rent. One flat payment covers everything, no separate bills to set up.'},
-        {g:'uni', q:'Is it furnished?', a:'Hi [Name], yes -- the room is fully furnished and move-in ready. Just bring your bags.'},
-        {g:'uni', q:'How do I apply?', a:'Hi [Name], it\'s quick: fill out our short pre-screening form at https://mitsecurestay.com/apply (about 2 minutes). From there we\'ll set up a quick call and a walkthrough, then the application. Happy to answer anything along the way.'},
-        {g:'uni', q:'What are your requirements?', a:'Hi [Name], we look at credit, income (generally around 3x the monthly rent), and rental history. If you don\'t have US credit -- no problem -- we accept proof of income, recent pay stubs, or a guarantor. Travel professionals and international applicants are welcome.'},
-        {g:'uni', q:'Do you accept students / travel nurses?', a:'Hi [Name], absolutely -- travel nurses, healthcare professionals, students, and relocating professionals are exactly who we host. We accept pay stubs, proof of income, or a guarantor if you don\'t have US credit history.'},
-        {g:'uni', q:'When can I see the place? / Tour?', a:'Hi [Name], I\'d be glad to set up a walkthrough -- in person or virtual. First step is our quick pre-screening form (https://mitsecurestay.com/apply), then we\'ll grab a time that works: https://calendly.com/mitsecurestay.'},
-        {g:'uni', q:'Can I call you? / Phone number?', a:'Hi [Name], happy to connect. The fastest way to get started is our short form at https://mitsecurestay.com/apply -- once that\'s in, we\'ll schedule a call to go over everything. You can also reach me anytime at mitsecurestay@gmail.com.'},
-        {g:'uni', q:'Do you allow pets?', a:'Hi [Name], our pet policy is property-specific, and we don\'t have any pet-friendly units available at the moment. Let me know what you\'re looking for and I\'ll keep you posted if that changes.'},
-        {g:'uni', q:'Do you offer short-term?', a:'Hi [Name], lease terms are flexible on a case-by-case basis, and shorter stays are possible on select properties -- especially for travel and contract assignments. Tell me your dates and I\'ll let you know what fits.'},
-        {g:'uni', q:'How much upfront? / Deposit?', a:'Hi [Name], it\'s one month\'s rent as the security deposit, plus your first month (or a prorated amount) before move-in. No broker fees.'},
-        {g:'uni', q:'How do I pay rent?', a:'Hi [Name], rent is handled through RentRedi, our secure online portal. We can also take Zelle, bank transfer, or credit card.'},
-        {g:'uni', q:'Can you hold the room for me?', a:'Hi [Name], rooms fill quickly, but once you\'ve completed the pre-screening form and application we can often hold a space while you finish your documents. The form is the first step: https://mitsecurestay.com/apply.'},
-        {g:'uni', q:'What documents do I need?', a:'Hi [Name], to apply you\'ll want proof of income (recent pay stubs or an offer letter) and a photo ID. If you don\'t have US credit, a guarantor or proof of income covers it. That\'s really it to get started.'},
-      ];
-
-      function qrCard(item){
-        var esc = escHtml(item.a);
-        var attr = item.a.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
-        return '<div class="bcast-card" data-cat="respond" data-qr="1"><div class="bcast-header"><div><div class="bcast-name">'+item.q+'</div></div></div>'
-          +'<div class="bcast-copy-wrap"><div class="bcast-text">'+esc+'</div>'
-          +'<div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\''+attr+'\')">Copy</button></div></div></div>';
-      }
-
-      var propCards = quickReplies.filter(function(r){return r.g==='prop';}).map(qrCard).join('');
-      var uniCards  = quickReplies.filter(function(r){return r.g==='uni';}).map(qrCard).join('');
-
-      html += '<div id="sec-quickreplies" style="margin-bottom:16px" data-search-section><div class="sec-head">Quick Replies <span class="sec-count">-- send-ready answers to the questions you get most</span></div>';
-      html += '<div style="font-size:10px;color:var(--hint);margin-bottom:10px;opacity:0.85;">These reflect the selected unit ('+u.name+'). Switch units above to update the property-specific answers.</div>';
-      html += '<div class="broadcast-grid">'+propCards+'</div>';
-      html += '<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--hint);margin:14px 0 8px;">Universal -- same for every unit</div>';
-      html += '<div class="broadcast-grid">'+uniCards+'</div>';
-      html += '</div>';
-      return html;
-    })()
-    +(function(){
-      var html = '';
-      // Lead Response -- unit-dependent (both cards read u.city/u.name)
-      html += '<div id="sec-leadresponse" style="margin-bottom:16px" data-search-section><div class="sec-head">Lead Response</div><div class="broadcast-grid">';
-      if(!u){
-        html += '<div style="grid-column:1/-1;color:var(--hint);font-size:13px;padding:12px 0">Select a vacancy above -- these scripts reference that unit\'s city.</div>';
-      } else {
-      var textMsg = 'Hi [Name], this is Greg from MIT Secure Stay. I received your housing request and this could be a good fit for what you\'re looking for in '+u.city+'. To get the process started, please fill out our short pre-screening form: https://mitsecurestay.com/apply -- takes about 2 minutes. Feel free to reply here with any questions.';
-      var emailBody = 'Hi [Name],\n\nThank you for your housing request. This could be a good fit for what we have available in '+u.city+'.\n\nTo get the process started, please fill out our short pre-screening form -- it takes about 2 minutes:\nhttps://mitsecurestay.com/apply\n\nOnce I receive your form I will follow up within 24 hours. Feel free to reply here or text me directly with any questions.\n\nBest,\nGreg\nMIT Secure Stay\nmitsecurestay@gmail.com';
-      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Text message</div><div class="bcast-type">Send first -- travelers respond faster to text</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Property-specific -- reflects the selected unit ('+u.name+'). Replace [Name] before sending.</div><div class="bcast-text" id="lr-text">'+escHtml(textMsg)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, textMsg)">Copy</button></div></div></div>';
-      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">Email reply</div><div class="bcast-type">Follow up if no text reply within a few hours | Subject: Re: Housing Request -- MIT Secure Stay</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Property-specific -- reflects the selected unit ('+u.name+'). Replace [Name] before sending.</div><div class="bcast-text" id="lr-email">'+escHtml(emailBody)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, emailBody)">Copy</button></div></div></div>';
-      }
-      html += '</div></div>';
-      // Prospect Redirect
-      // Prospect Redirect scripts array for indexed copy buttons
-      var prospectRedirect = [
-        {name:'Move-in date ask', note:'Send immediately when someone responds to a listing', text:'Hey [Name], thanks for reaching out! When are you looking to move in?'},
-        {name:'Budget + location', note:'Send after they give you a move-in date', text:'Got it. What\'s your budget and are you flexible on location?'},
-        {name:'View availabilities (off-Facebook)', note:'Send when someone asks how to see your properties -- SMS, email, other platforms', text:'Hi [Name], you can see our current listings at:\nhttps://mitsecurestay.com\n\nLet me know if any catch your eye and I\'ll get you the details.'},
-        {name:'View availabilities (Facebook)', note:'Send when a Facebook prospect asks how to see your properties -- keeps traffic on Facebook', text:'Hi [Name], you can see our current listings and 100+ five-star reviews on Facebook Marketplace:\nfacebook.com/marketplace/profile/52201881\n\nLet me know if any catch your eye and I\'ll get you the details.'},
-        {name:'Next steps', note:'Send after qualifying (move-in date, budget, location)', text:'Hi [Name], thanks for your interest!\n\nHere are the next steps:\n\n1. Fill out our quick tenant questionnaire: https://mitsecurestay.com/apply -- share your preferences and availability.\n\n2. Once you have completed the questionnaire you will be directed to schedule a call. We will discuss any questions and arrange a walkthrough.\n\nBest,\nGreg'},
-        {name:'No availability -- network referral', note:'Send when you do not have a matching space for the prospect', text:'Hi [Name], unfortunately I do not have the space you are looking for available right now. I do work with a network of other property operators in the DC/Maryland area -- if you would like, I can share your info with them and connect you if there is a match. Just fill out our quick form so I have the details to share: https://mitsecurestay.com/apply. No pressure either way.'},
-        {name:'Confirmation-gate follow-up', note:'Marketplace/Roomies lead who didn\'t respond to "Yes, are you interested?" -- send once, 48 hours after the confirmation gate, then mark cold if still no reply', text:'Hi [Name], just checking if you\'re still looking for housing in [City/Neighborhood]? Let me know if you have any questions!'},
-      ];
-      html += '<div id="sec-prospectredirect" style="margin-bottom:16px" data-search-section><div class="sec-head">Prospect Redirect</div><div class="broadcast-grid">';
-      prospectRedirect.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] before sending.</div><div class="bcast-text" id="pr'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, prospectRedirect['+i+'].text)">Copy</button></div></div></div>'; });
-      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">Comment reply</div><div class="bcast-type">Someone comments on a group post asking if available</div></div></div><div class="bcast-copy-wrap"><div class="help-note">No property details needed -- point them to the form. One link, one next step.</div><div class="bcast-text">Hi [Name]! Yes, still available. You can get full details and apply here: https://mitsecurestay.com/apply -- takes about 2 minutes. Feel free to DM if you have questions.</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\'Hi [Name]! Yes, still available. You can get full details and apply here: https://mitsecurestay.com/apply -- takes about 2 minutes. Feel free to DM if you have questions.\')">Copy</button></div></div></div>';
-      html += '<div class="bcast-card"><div class="bcast-header"><div><div class="bcast-name">DM reply</div><div class="bcast-type">Someone DMs asking for more info or details</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Keep it short -- one link, one next step.</div><div class="bcast-text">Hi [Name], thanks for reaching out! The best way to get full details and move forward is through our short pre-screening form: https://mitsecurestay.com/apply -- takes about 2 minutes. Happy to answer any questions after.</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this,\'Hi [Name], thanks for reaching out! The best way to get full details and move forward is through our short pre-screening form: https://mitsecurestay.com/apply -- takes about 2 minutes. Happy to answer any questions after.\')">Copy</button></div></div></div>';
-      // "Roomies / Craigslist inquiry" card retired 2026-07-23 -- duplicated the canonical
-      // DM reply (same purpose, same CTA, different wording only). Per the design heuristic:
-      // prefer extending an existing approved touch over creating a new standalone script.
-      // Use DM reply for this situation instead.
-      
-      // Furnished Finder cold outreach -- static opener, one question only
-      var ffText = 'Hi [Name],\n\nGreg from MIT Secure Stay -- saw your Furnished Finder inquiry for the DC/Maryland area.\n\nAre you looking for a room to rent in a shared home, or a private living space?\n\nBest,\nGreg';
-      window.__ffColdText = ffText;
-      
-      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">Furnished Finder Outbound</div><div class="bcast-type">Sent when alerted of a traveler inquiry -- qualifies space type first</div></div></div><div class="bcast-copy-wrap"><div class="help-note">One question only. Their answer tells you which inventory to pitch.</div><div class="bcast-text" id="ffcold">'+escHtml(ffText)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffColdText)">Copy</button></div></div></div>';
-
-      // Furnished Finder -- ready to move forward (FF now disallows external links in-thread; no mitsecurestay.com/apply link here)
-      var ffReadyAskNumber = 'That\'s great to hear! What\'s the best number to text you at? I\'ll send over the next steps right away.';
-      var ffReadyNumberOnFile = 'Great news -- I\'ll text you the next steps now, keep an eye on your phone!';
-      window.__ffReadyAskNumber = ffReadyAskNumber;
-      window.__ffReadyNumberOnFile = ffReadyNumberOnFile;
-      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">FF Ready -- Ask for Number</div><div class="bcast-type">In-FF-thread reply when they signal readiness -- no number on file yet</div></div></div><div class="bcast-copy-wrap"><div class="help-note">No link -- Furnished Finder does not allow external links in-thread. Next steps go out by text.</div><div class="bcast-text" id="ffready1">'+escHtml(ffReadyAskNumber)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffReadyAskNumber)">Copy</button></div></div></div>';
-      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">FF Ready -- Number on File</div><div class="bcast-type">In-FF-thread reply when they signal readiness -- phone number already provided</div></div></div><div class="bcast-copy-wrap"><div class="help-note">No link -- send the funnel link separately by text (see FF Next Steps below).</div><div class="bcast-text" id="ffready2">'+escHtml(ffReadyNumberOnFile)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffReadyNumberOnFile)">Copy</button></div></div></div>';
-
-      // FF Follow-Up -- unit-dependent (property intro).
-      if(!u){
-        html += '<div class="bcast-card" data-cat="respond" style="grid-column:1/-1"><div class="bcast-header"><div><div class="bcast-name">FF Follow-Up (Text/Email)</div><div class="bcast-type">Property intro + next steps</div></div></div><div class="bcast-copy-wrap"><div style="color:var(--hint);font-size:13px;padding:8px 0">Select a vacancy above -- this script introduces that specific unit.</div></div></div>';
-      } else {
-      var ffPropIsNow = u.avail.toLowerCase()==='now';
-      var ffPropTeaser = u.highlight ? u.highlight.split('.')[0]+'.' : (u.transit ? u.transit.split('.')[0]+'.' : '');
-      var ffNextStepsText = 'Hi [Name], this is Greg with MIT Secure Stay -- following up on your Furnished Finder inquiry for the room in '+u.city+' ('+bathLine(u)+' '+u.rent+'/mo, all-inclusive, '+(ffPropIsNow?'available now':'available soon')+'). '+ffPropTeaser+'\n\nHere are the next steps:\n\n1. Fill out our short pre-screening questionnaire: '+CONFIG.applyUrl+' -- takes about 2 minutes, shares your preferences and availability.\n\n2. Once that\'s complete, you\'ll be able to schedule a quick call so we can answer any questions and set up a walkthrough.\n\nFeel free to reply here with any questions!\n\nBest,\nGreg';
-      var ffNextStepsEmail = 'Hi [Name],\n\nThis is Greg with MIT Secure Stay -- thank you for reaching out about the room in '+u.city+' on Furnished Finder.\n\n'+bathLine(u)+' '+u.rent+'/mo, all-inclusive, '+(ffPropIsNow?'available now':'available soon')+'. '+ffPropTeaser+'\n\nHere are the next steps:\n\n1. Fill out our short pre-screening questionnaire: '+CONFIG.applyUrl+' -- takes about 2 minutes, shares your preferences and availability.\n\n2. Once that\'s complete, you\'ll be able to schedule a quick call so we can answer any questions and set up a walkthrough.\n\nFeel free to reply here or reach me directly with any questions.\n\nBest,\nGreg\nMIT Secure Stay\n'+CONFIG.email;
-      window.__ffNextStepsText = ffNextStepsText;
-      window.__ffNextStepsEmail = ffNextStepsEmail;
-      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">FF Follow-Up (Text) -- Intro + Property + Next Steps</div><div class="bcast-type">Send by SMS once you have their number -- mentions Furnished Finder by name as a trust signal</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Sent off-FF-platform, so the link is fine here. Reflects the selected unit ('+u.name+').</div><div class="bcast-text" id="ffnext-text">'+escHtml(ffNextStepsText)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffNextStepsText)">Copy</button></div></div></div>';
-      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">FF Follow-Up (Email) -- Intro + Property + Next Steps</div><div class="bcast-type">Use if no phone number is available -- subject: "Re: Your Furnished Finder Inquiry -- MIT Secure Stay"</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Fallback only -- don\'t send both text and email same day if a number is available. Reflects the selected unit ('+u.name+').</div><div class="bcast-text" id="ffnext-email">'+escHtml(ffNextStepsEmail)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ffNextStepsEmail)">Copy</button></div></div></div>';
-      }
-
-      // TurboTenant / Zillow / SpareRoom backup ping -- some prospects never check their
-      // in-platform inbox, so Greg follows up directly. This is deliberately a LIGHT
-      // reminder, not a second pitch: the full funnel script already went out as the
-      // in-platform reply (per LEAD_SOURCE_PLAYBOOK's FUNNEL_IMMEDIATELY strategy), so
-      // repeating it here would restart the conversation instead of advancing it.
-      // Sequence: (1) full pitch in-platform, (2) this same-day ping if they've gone
-      // quiet, (3) the existing Stale Prospect Nudge in Follow-Up if still no response
-      // after 3-5 days. Stays platform-agnostic on purpose -- TurboTenant syndicates from
-      // many source sites, so a prospect who applied via one of those has never seen the
-      // name "TurboTenant" and naming it wouldn't register as a trust signal.
-      var ttPingText = 'Hi [Name], just wanted to make sure you saw my reply about the room -- let me know if you have any questions or if you\'re ready to move forward!';
-      var ttPingEmail = 'Hi [Name],\n\nJust wanted to make sure you saw my earlier reply -- let me know if you have any questions or if you\'re ready to get started.\n\nBest,\nGreg\nMIT Secure Stay\n'+CONFIG.email;
-      window.__ttPingText = ttPingText;
-      window.__ttPingEmail = ttPingEmail;
-      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">Platform Follow-Up Ping (Text)</div><div class="bcast-type">TurboTenant / Zillow / SpareRoom -- send same-day if a phone number is available and they haven\'t responded in-platform</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Light reminder only -- no link, no re-pitch. The full funnel already went out as the in-platform reply. Don\'t name the platform.</div><div class="bcast-text" id="ttping-text">'+escHtml(ttPingText)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ttPingText)">Copy</button></div></div></div>';
-      html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">Platform Follow-Up Ping (Email)</div><div class="bcast-type">Use if no phone number is available -- subject: "Following Up -- MIT Secure Stay"</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Same light-touch reasoning as the text version.</div><div class="bcast-text" id="ttping-email">'+escHtml(ttPingEmail)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__ttPingEmail)">Copy</button></div></div></div>';
-            
-      // RouteCheck script -- unit-dependent, only renders if that unit has a RouteCheck URL.
-      if(u&&u.routeCheckUrl){
-        var rcText = 'Hi [Name], here is our commute calculator for this property -- it shows typical transit and driving times to nearby universities, hospitals, and federal hubs:\n\n'+u.routeCheckUrl+'\n\nTake a look and let me know if it works for you.';
-        window.__rcText = rcText;
-        html += '<div class="bcast-card" data-cat="respond"><div class="bcast-header"><div><div class="bcast-name">RouteCheck -- commute calculator</div><div class="bcast-type">Send when prospect asks how far the property is from a specific location</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Property-specific. Replace [Name] before sending.</div><div class="bcast-text" id="rctext">'+escHtml(rcText)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, window.__rcText)">Copy</button></div></div></div>';
-      }
-      html += '</div></div>';
-      // Follow-Up
-      var followUps = [
-        {name:'Missed appointment', note:'Send within 30 min of a missed call or tour', text:"Hey [Name], it\'s Greg from MIT Secure Stay. Sorry we didn\'t connect today. No worries -- feel free to reschedule at your convenience: https://calendly.com/mitsecurestay. Looking forward to speaking with you."},
-        {name:'RentRedi application sent', note:'Send immediately after sending the RentRedi application', text:"Hi [Name], I sent the application to your email via RentRedi. Open the email, click the link, and log in or sign up to access it. If any sections feel too detailed, feel free to skip them -- fill out what you can and I\'ll follow up if I need anything else. Thanks!"},
-        {name:'Stale prospect nudge', note:'Send if no activity after 3-5 days', text:'Hey [Name], it\'s Greg from MIT Secure Stay. Just checking in -- are you still looking for housing? I have a room available in [City] that may be a great fit. Happy to answer any questions or get you scheduled. https://mitsecurestay.com/apply'},
-        {name:'Form not completed', note:'Send if prospect expressed interest but never filled out the form', text:'Hey [Name], it\'s Greg from MIT Secure Stay. I wanted to follow up -- the pre-screening form is the first step to getting you set up. It only takes 2 minutes: https://mitsecurestay.com/apply. Let me know if you have any questions.'},
-        {name:'Call not scheduled', note:'Send after form is completed but no call booked', text:'Hey [Name], it\'s Greg. I received your pre-screening form -- thank you! The next step is a quick call to go over the details. You can grab a time here: https://calendly.com/mitsecurestay. Looking forward to connecting.'}
-      ];
-      html += '<div id="sec-followup" style="margin-bottom:16px" data-search-section><div class="sec-head">Follow-Up</div><div class="broadcast-grid">';
-      followUps.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="followup"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="fu'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, followUps['+i+'].text)">Copy</button></div></div></div>'; });
-      html += '</div></div>';
-      // Scheduling
-      var scheduling = [
-        {name:'Tour confirmation', note:'Send immediately after a tour is scheduled', text:'Hi [Name], your tour is confirmed! Looking forward to showing you the place. If anything comes up, feel free to reach out or reschedule here: https://calendly.com/mitsecurestay. See you soon.'},
-        {name:'Tour reminder', note:'Send the evening before the scheduled tour', text:'Hey [Name], just a quick reminder about your tour tomorrow. Looking forward to it. If anything changes, let me know or reschedule here: https://calendly.com/mitsecurestay.'}
-      ];
-      html += '<div id="sec-scheduling" style="margin-bottom:16px" data-search-section><div class="sec-head">Scheduling</div><div class="broadcast-grid">';
-      scheduling.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="followup"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="sc'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, scheduling['+i+'].text)">Copy</button></div></div></div>'; });
-      html += '</div></div>';
-      // Pipeline
-      var pipeline = [
-        {name:'Application approved', note:'Send after background and credit check clear', text:'Hi [Name], great news -- your application has been approved! The next step is signing your lease. I will be sending it over through RentRedi shortly. Let me know if you have any questions. Welcome to MIT Secure Stay.'},
-        {name:'Moved forward with another applicant', note:'Send when another applicant is selected for the unit', text:'Hi [Name], thank you for your interest in MIT Secure Stay. Unfortunately I moved forward with another applicant for this unit. I will keep your information on file and reach out if something else becomes available that may be a good fit. I appreciate your time.'},
-        {name:'Move-in confirmation', note:'Send 2-3 days before move-in date', text:"Hi [Name], just confirming your move-in for [Date]. Please make sure your security deposit and first month\'s rent are settled before arrival. Looking forward to having you. Reach out if you need anything before then."}
-      ];
-      html += '<div id="sec-pipeline" style="margin-bottom:16px" data-search-section><div class="sec-head">Pipeline</div><div class="broadcast-grid">';
-      pipeline.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="pipeline"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] and bracketed fields before sending.</div><div class="bcast-text" id="pl'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, pipeline['+i+'].text)">Copy</button></div></div></div>'; });
-      html += '</div></div>';
-      // Post-Placement
-      var postPlacement = [
-        {name:'Furnished Finder review request', note:'Send 2-4 weeks before move-out or after a positive signal', text:"Hi [Name], it\'s been a pleasure having you. As your stay wraps up, if you\'ve had a good experience I\'d really appreciate a review on Furnished Finder. It helps other travelers find quality housing and means a lot. Thank you."},
-        {name:'Facebook review request', note:'Send 2-4 weeks before move-out or after a positive signal', text:"Hi [Name], it\'s been great having you. If you\'ve had a good experience, I\'d be grateful for a quick review on my Facebook page: facebook.com/mitsecurestay/reviews/?id=100083623381514&sk=reviews -- takes 30 seconds and helps a lot. Thank you!"}
-      ];
-      html += '<div id="sec-postplacement" style="margin-bottom:16px" data-search-section><div class="sec-head">Post-Placement</div><div class="broadcast-grid">';
-      postPlacement.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="review"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name] before sending.</div><div class="bcast-text" id="pp'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, postPlacement['+i+'].text)">Copy</button></div></div></div>'; });
-      html += '</div></div>';
-      // Lease Renewal -- current tenant, not a prospect. Genuinely new category (no existing
-      // sequence covers tenant retention), so a new script fits the design heuristic rather
-      // than violating it.
-      var leaseRenewal = [
-        {name:'Renewal check-in', note:'Send ~60 days before lease end -- text', text:'Hi [Name], this is Greg with MIT Secure Stay. Your lease at [Property] is set to end on [Date] -- I wanted to check in early and see if you\'re planning to renew. Let me know your thoughts whenever you get a chance, and we can go over next steps together.'},
-        {name:'Renewal follow-up', note:'Send if no response after a week or two -- light reminder, not a repeat of the check-in', text:'Hi [Name], just following up on my last message -- any thoughts on renewing? No rush, just want to make sure it didn\'t get buried. Let me know whenever works for you.'},
-        {name:'Response -- Yes, renewing', note:'Tenant confirms they\'re staying', text:'Hi [Name], that\'s great to hear -- glad you\'re staying! I\'ll get the updated lease put together and send it your way soon. Let me know if there\'s anything specific you\'d like to go over first.'},
-        {name:'Response -- No, not renewing', note:'Tenant confirms they\'re moving out', text:'Hi [Name], thanks for letting me know -- I appreciate the heads up. Let\'s confirm your move-out date so we can plan the walkthrough and get your security deposit process started. What date works for you?'},
-        {name:'Response -- Not sure yet', note:'Tenant needs more time to decide', text:'Hi [Name], no problem at all -- take the time you need. Just let me know roughly when you\'ll have a better idea, so I can check back in around then.'}
-      ];
-      html += '<div id="sec-leaserenewal" style="margin-bottom:16px" data-search-section><div class="sec-head">Lease Renewal</div><div class="broadcast-grid">';
-      leaseRenewal.forEach(function(s,i){ html += '<div class="bcast-card" data-cat="pipeline"><div class="bcast-header"><div><div class="bcast-name">'+s.name+'</div><div class="bcast-type">'+s.note+'</div></div></div><div class="bcast-copy-wrap"><div class="help-note">Replace [Name], [Property], and [Date] before sending.</div><div class="bcast-text" id="lr-renew'+i+'">'+escHtml(s.text)+'</div><div class="bcast-footer"><span></span><button class="copy-btn" onclick="copyText(this, leaseRenewal['+i+'].text)">Copy</button></div></div></div>'; });
-      html += '</div></div>';
-      html += '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:4px;font-size:12px;color:var(--hint);line-height:1.9"><span style="color:var(--muted);font-weight:500">How to use:</span> Copy any script and paste into Google Voice or your messaging app. Replace [Name], [City], and [Date] with the correct details. No other editing needed.</div>';
-      return html;
-    })()
     +'</div>'
     +'<div class="tab-panel" id="panel-roomies">'
     +(function(){
@@ -1214,7 +996,7 @@ renderSidebar();
       </div>
       <div style="display:flex;gap:12px;align-items:flex-start">
         <div style="background:var(--accent);color:#0e0e0e;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px">2</div>
-        <div style="font-size:13px;color:var(--text);line-height:1.6"><strong style="font-weight:500">Pick a tab:</strong><br><em>Broadcasts</em> -- Facebook group posts<br><em>Message Scripts</em> -- lead response, follow-up, scheduling, pipeline, and review texts<br><em>Roomies Outbound</em> -- direct messages to active Roomies.com profiles<br><em>Platform Listings</em> -- Zillow, TurboTenant, Furnished Finder, etc.</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6"><strong style="font-weight:500">Pick a tab:</strong><br><em>Broadcasts</em> -- Facebook group posts<br><em>Roomies Outbound</em> -- direct messages to active Roomies.com profiles<br><em>Platform Listings</em> -- Zillow, TurboTenant, Furnished Finder, etc.</div>
       </div>
       <div style="display:flex;gap:12px;align-items:flex-start">
         <div style="background:var(--accent);color:#0e0e0e;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px">3</div>
